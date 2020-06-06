@@ -8,11 +8,20 @@ A very handy program that handles tasks the simplest but just as reasonable way
 * [ ] Store completed TODO's with date, in separate file
 * [ ] Should have unlimited number of TODO files that can be made for different broad categories (by user)
 
-### Process
-(-a/--add option) NEEDS to be asked: 
-* Name
-* Description
-* Category (Parent)
+### Options (Sections---> t:TODOs, c:Categories, cmpl:Completed)
+* [ ] sp t [-a/--add] <Title> <Description> <Date> <Category> 
+    * (Pop open menu of all categories)
+    * Title
+    * Description
+    * Category (Parent)
+* [ ] sp t [-d/--del] <Title> 
+    * (Should pop open a menu of all existing TODOs with numbers? TAB COMPLETE)
+    * ID
+* [ ] sp t [-c/--cpl] <Title>
+    * (Should open a menu for existing TODOs, TAB COMPLETE NEEDS TO EXIST)
+    * ID
+* [ ] sp t [-l/--list]
+    * (Will just cat out a list of all TODOs and their trees in a pretty way) 
 
 ### TODO's
 * HELP MENU

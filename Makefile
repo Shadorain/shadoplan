@@ -2,7 +2,7 @@
 CC=gcc
 CFLAGS=-I.
 DEPS=config.h
-OBJ=shadoplan.o shadofunc.o
+OBJ=options.o shadofunc.o
 BDIR=/usr/local
 
 %.o: %.c $(DEPS)
