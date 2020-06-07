@@ -1,7 +1,7 @@
 #include <ncurses.h>
 #include <stdio.h>
 
-main() {
+int shadoplanCurses() {
      
     WINDOW *w;
     char list[5][7] = { "One", "Two", "Three", "Four", "Five" };
@@ -56,4 +56,6 @@ main() {
  
     delwin( w );
     endwin();
+
+    return 0;
 }

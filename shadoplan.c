@@ -11,15 +11,14 @@ struct Entry {
 
 /* void add */
 
-void usage() {
-    fputs("usage: dmenu [-bfiv] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
-            "             [-nb color] [-nf color] [-sb color] [-sf color] [-w windowid]\n", stderr);
-}
 void addDesc(Entry *e) {}
 
 int main () {
-    // in other file
-    testFunc();
+
+    int STATE = shadoplanCurses(); //Start NCurses
+    if (STATE==1) {
+        printf("Exit Code 1, NCurses Menu has crashed. Please restart program.");
+    }
 
     return 0;
 }
