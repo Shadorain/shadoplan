@@ -1,12 +1,12 @@
 # Shadoplan Makefile
 CC=gcc
-CFLAGS=-I.
+CFLAGS=-I. -lncurses
 DEPS=config.h
-OBJ=options.o shadofunc.o shadomenu.o
+OBJ=shadoplan.o options.o shadomenu.o
 BDIR=/usr/local
 
 %.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) 
 
 sp: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)

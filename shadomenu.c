@@ -1,5 +1,9 @@
+// Libraries
 #include <ncurses.h>
 #include <stdio.h>
+
+// Files
+#include "shadomenu.h"
 
 int shadoplanCurses() {
      
