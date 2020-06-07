@@ -1,5 +1,6 @@
-// Libraris
+// Libraries
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 // Files
 #include "config.h"
@@ -17,9 +18,29 @@ struct Entry {
 
 void addDesc(Entry *e) {}
 
-int main () {
-    usage();
+int main (int argc, char *argv[]) {
+    char VERSION[3] = "1.0";
     int TUI = 1;
+
+    // Checks if options given, if not then runs Tui
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "-v") || !strcmp(argv[i], "--version")) { // Prints Version
+            printf("shadoplan-%s", VERSION);
+            exit(0);
+        } else if (!strcmp(argv[i], "-h")) { // Prints Version
+            helpText("");
+            exit(0);
+        } else if (i + 1 == argc) {
+            usage();
+            exit(0);
+        } else if (!strcmp(argv[++i], "-h") || strcmp(argv[++i], "--help")) {
+            helpText(argv[i]);
+            exit(0);
+        } else {
+            usage(); exit(0);
+        }
+    }
+
     if (TUI==1) {
         int STATE = shadoplanCurses(); //Start NCurses
         if (STATE==1) {
