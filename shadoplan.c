@@ -9,36 +9,40 @@
 
 typedef struct Entry Entry;
 struct Entry {
-    char name[100];
+    char name[96];
     char descstr[512];
     
 };
 
-/* void add */
+// Function Declaration
+void add (char title[], char desc[], char priority[], char category[], char due[]);
 
-void addDesc(Entry *e) {}
+void add (char title[], char desc[], char priority[], char category[], char due[]) {
+
+}
 
 int main (int argc, char *argv[]) {
     char VERSION[3] = "1.0";
-    int TUI = 1;
+    int priority, TUI = 1;
+    char title[96],desc[512],category[30],due[7];
     // Checks if options given, if not then runs Tui
     for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "-v")) { // Prints Version
+        if (!strcmp(argv[i], "-v")) // Prints Version
             printf("shadoplan-%s", VERSION);
-            exit(0);
-        } else if (!strcmp(argv[i], "-h")) { // General Help Menu
-            helpText("");
-            exit(0);
-        } else if (!strcmp(argv[++i], "-h")) { // Depth Help Menu
+        else if (!strcmp(argv[i], "-h")) { // General Help Menu
+            printf("Run 'man shadoplan' for full documentation.\n");
+            usage();
+        } else if (!strcmp(argv[++i], "-h")) // Depth Help Menu
             helpText(*argv);
+        else if ((!strcmp(argv[++i], "-a")) || (strcmp(argv[++i], "--help"))) { // Add Option
+            if (!strcmp(argv[2+i],"") || !strcmp(argv[3+i], ""))
+                usage();
+            add(argv[2+i], argv[3+i], argv[4+i], argv[5+i], argv[6+i]);
             exit(0);
-        } else if (i + 1 == argc) {
+        } else if (i + 1 == argc)
             usage();
-            exit(0);
-        } else {
+        else
             usage();
-            exit(0);
-        }
     }
 
     if (TUI==1) {

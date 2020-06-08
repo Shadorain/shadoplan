@@ -1,5 +1,6 @@
 // Libraries
 #include <stdio.h>
+#include <stdlib.h>
 
 // Files
 #include "options.h"
@@ -26,9 +27,12 @@ void helpText(char arg[]) {
         printf("Usage: sp c IN_PROGRESS\n");
     } else
         usage();
+
+    exit(0);
 }
 
 void usage() {
     printf("Usage: sp [t/c/x] [-h] [-v]\n");
     printf("    Run -h after [t/c/x] for more specified information.\n");
+    exit(0);
 }
