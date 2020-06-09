@@ -5,8 +5,8 @@
 // Files
 #include "options.h"
 
-void helpText(char arg[]) {
-    if (arg[5] == 't') {
+void helpText(char arg) {
+    if (arg == 't') {
         printf("Usage: sp t [-a/--add] [-d/--del] [-x/--check] [-l/--list] [-s/--set]");
         printf("Options: \n");
         printf("    -a, --add [Title] [Description] [Priority] [Category] [Due Date]\n");
@@ -21,9 +21,9 @@ void helpText(char arg[]) {
         printf("                                         Formats: tree, plain, interactive, date\n");
         printf("    -s, --set [FILE]                Sets the TODO list to be used\n");
         printf("    -h                              Displays this help message\n");
-    } else if (arg[5] == 'c') {
+    } else if (arg == 'c') {
         printf("Usage: sp c IN_PROGRESS\n");
-    } else if (arg[5]=='x') {
+    } else if (arg =='x') {
         printf("Usage: sp c IN_PROGRESS\n");
     } else
         usage();

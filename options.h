@@ -1,4 +1,4 @@
 // Include File for options.c
 void usage();
 
-void helpText(char arg[]);
+void helpText(char arg);

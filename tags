@@ -9,14 +9,23 @@
 %.o	Makefile	/^%.o: %.c $(DEPS)$/;"	t
 BDIR	Makefile	/^BDIR=\/usr\/local$/;"	m
 CC	Makefile	/^CC=gcc$/;"	m
-CFLAGS	Makefile	/^CFLAGS=-I.$/;"	m
+CFLAGS	Makefile	/^CFLAGS=-I. -lncurses -g$/;"	m
 Concepts	README.md	/^### Concepts$/;"	S
 DEPS	Makefile	/^DEPS=config.h$/;"	m
-OBJ	Makefile	/^OBJ=shadoplan.o shadofunc.o$/;"	m
+Entry	shadoplan.c	/^struct Entry {$/;"	s	file:
+Entry	shadoplan.c	/^typedef struct Entry Entry;$/;"	t	typeref:struct:Entry	file:
+OBJ	Makefile	/^OBJ=shadoplan.o options.o shadomenu.o$/;"	m
+Options (Sections---> t:TODOs, c:Categories, cpl:Completed)	README.md	/^### Options (Sections---> t:TODOs, c:Categories, cpl:Completed)$/;"	S
+TODO's	README.md	/^### TODO's$/;"	S
+add	shadoplan.c	/^void add (char title[], char desc[], int priority, char category[], char due[]) {$/;"	f	typeref:typename:void
 clean	Makefile	/^clean:$/;"	t
+descstr	shadoplan.c	/^    char descstr[512];$/;"	m	struct:Entry	typeref:typename:char[512]	file:
+helpText	options.c	/^void helpText(char arg[]) {$/;"	f	typeref:typename:void
 install	Makefile	/^install: $/;"	t
-main	shadoplan.c	/^int main () {$/;"	f	typeref:typename:int
+main	shadoplan.c	/^int main (int argc, char *argv[]) {$/;"	f	typeref:typename:int
+name	shadoplan.c	/^    char name[96];$/;"	m	struct:Entry	typeref:typename:char[96]	file:
 shadoplan	README.md	/^# shadoplan$/;"	c
+shadoplanCurses	shadomenu.c	/^int shadoplanCurses() {$/;"	f	typeref:typename:int
 sp	Makefile	/^sp: $(OBJ)$/;"	t
-testFunc	shadofunc.c	/^void testFunc(void) {$/;"	f	typeref:typename:void
 uninstall	Makefile	/^uninstall: $/;"	t
+usage	options.c	/^void usage() {$/;"	f	typeref:typename:void

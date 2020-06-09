@@ -26,32 +26,42 @@ int main (int argc, char *argv[]) {
     int priority, TUI = 1;
     char title[96],desc[512],cat[30],due[7];
     // Checks if options given, if not then runs Tui
-    for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "-v")) // Prints Version
-            printf("shadoplan-%s", VERSION);
-        else if (!strcmp(argv[i], "-h")) { // General Help Menu
-            printf("Run 'man shadoplan' for full documentation.\n");
-            usage();
-        } else if (!strcmp(argv[++i], "-h")) // Depth Help Menu
-            helpText(*argv);
-        else if (!strcmp(argv[++i], "-a")) { //|| (!strcmp(argv[++i], "--add"))) { // Add Option
-            strcpy(title, argv[2+i]);
-            strcpy(desc, argv[3+i]);
-            priority=atoi(argv[4+i]);
-            strcpy(cat, argv[5+i]);
-            strcpy(due, argv[6+i]);
-            if (!strcmp(argv[2+i],"") || !strcmp(argv[3+i], "")) //If Title or Description empty
+    if (argc==2 && !strcmp(argv[1], "-v") || !strcmp(argv[1], "--version")) { // Prints Version
+        printf("shadoplan-%s\n", VERSION);
+        exit(0);
+    } else if (argc==2 && !strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) { // General Help Menu
+        printf("Run 'man shadoplan' for full documentation.\n");
+        usage();
+    } else if (argc > 2) {
+        if (!strcmp(argv[2], "-h") || !strcmp(argv[2], "--help")) { // Depth Help Menu
+            char arg=*argv[1];
+            helpText(arg);
+        } else if (!strcmp(argv[2], "-a") || (!strcmp(argv[2], "--add"))) { // Add Option
+            if (argc < 5) //If Title or Description empty
                 usage();
-            if (!strcmp(argv[4+i],"")) //If priority empty
+            else if (argc < 6) //If priority empty
                 priority=0;
-            else if (!strcmp(argv[5+i],"")) //If category empty
+            else if (argc < 7) //If category empty
                 strcpy(cat,"");
-            else if (!strcmp(argv[6+i],"")) //If Due Date empty
+            else if (argc < 8) //If Due Date empty
                 strcpy(due,"");
+            else if (argc > 8)
+                usage();
+            else {
+                priority=atoi(argv[5]);
+                strcpy(cat, argv[6]);
+                strcpy(due, argv[7]);
+            }
+            strcpy(title, argv[3]);
+            strcpy(desc, argv[4]);
+            printf("TITLE: %s\n", title);
+            printf("DESC: %s\n", desc);
+            printf("PRIORITY: %d\n", priority);
+            printf("CAT: %s\n", cat);
+            printf("DUE: %s\n", due);
             add(title, desc, priority, cat, due);
-        } else if (i + 1 == argc)
-            usage();
-        else
+            exit(0);
+        } else
             usage();
     }
 
