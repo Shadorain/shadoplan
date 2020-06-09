@@ -26,10 +26,10 @@ int main (int argc, char *argv[]) {
     int priority, TUI = 1;
     char title[96],desc[512],cat[30],due[7];
     // Checks if options given, if not then runs Tui
-    if (argc==2 && !strcmp(argv[1], "-v") || !strcmp(argv[1], "--version")) { // Prints Version
+    if (argc==2 && (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version"))) { // Prints Version
         printf("shadoplan-%s\n", VERSION);
         exit(0);
-    } else if (argc==2 && !strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) { // General Help Menu
+    } else if (argc==2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) { // General Help Menu
         printf("Run 'man shadoplan' for full documentation.\n");
         usage();
     } else if (argc > 2) {
@@ -41,8 +41,13 @@ int main (int argc, char *argv[]) {
                 usage();
             else if (argc < 6) //If priority empty
                 priority=0;
-            else if (argc < 7) //If category empty
+            else if (argc < 7) { //If category empty
+                if(!(strspn(argv[5], "0123456789") == strlen(argv[5]))) {
+                    printf("Priority must be a digit (0-9)\n");
+                    usage();
+                }
                 strcpy(cat,"");
+            }
             else if (argc < 8) //If Due Date empty
                 strcpy(due,"");
             else if (argc > 8)
