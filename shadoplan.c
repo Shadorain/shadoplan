@@ -42,20 +42,22 @@ int main (int argc, char *argv[]) {
             else if (argc < 6) //If priority empty
                 priority=0;
             else if (argc < 7) { //If category empty
-                if(!(strspn(argv[5], "0123456789") == strlen(argv[5]))) {
-                    printf("Priority must be a digit (0-9)\n");
-                    usage();
-                }
+                priority=atoi(argv[5]);
                 strcpy(cat,"");
-            }
-            else if (argc < 8) //If Due Date empty
+            } else if (argc < 8) { //If Due Date empty
+                priority=atoi(argv[5]);
+                strcpy(cat, argv[6]);
                 strcpy(due,"");
-            else if (argc > 8)
+            } else if (argc > 8)
                 usage();
             else {
                 priority=atoi(argv[5]);
                 strcpy(cat, argv[6]);
                 strcpy(due, argv[7]);
+            }
+            if(!(priority >= 0 && priority < 10)) {
+                printf("Priority must be a digit (0-9)\n");
+                usage();
             }
             strcpy(title, argv[3]);
             strcpy(desc, argv[4]);
