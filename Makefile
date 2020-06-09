@@ -1,6 +1,6 @@
 # Shadoplan Makefile
 CC=gcc
-CFLAGS=-I. -lncurses
+CFLAGS=-I. -lncurses -g
 DEPS=config.h
 OBJ=shadoplan.o options.o shadomenu.o
 BDIR=/usr/local

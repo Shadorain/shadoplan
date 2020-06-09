@@ -15,16 +15,16 @@ struct Entry {
 };
 
 // Function Declaration
-void add (char title[], char desc[], char priority[], char category[], char due[]);
+void add (char title[], char desc[], int priority, char category[], char due[]);
 
-void add (char title[], char desc[], char priority[], char category[], char due[]) {
+void add (char title[], char desc[], int priority, char category[], char due[]) {
 
 }
 
 int main (int argc, char *argv[]) {
     char VERSION[3] = "1.0";
     int priority, TUI = 1;
-    char title[96],desc[512],category[30],due[7];
+    char title[96],desc[512],cat[30],due[7];
     // Checks if options given, if not then runs Tui
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-v")) // Prints Version
@@ -34,11 +34,21 @@ int main (int argc, char *argv[]) {
             usage();
         } else if (!strcmp(argv[++i], "-h")) // Depth Help Menu
             helpText(*argv);
-        else if ((!strcmp(argv[++i], "-a")) || (strcmp(argv[++i], "--help"))) { // Add Option
-            if (!strcmp(argv[2+i],"") || !strcmp(argv[3+i], ""))
+        else if (!strcmp(argv[++i], "-a")) { //|| (!strcmp(argv[++i], "--add"))) { // Add Option
+            strcpy(title, argv[2+i]);
+            strcpy(desc, argv[3+i]);
+            priority=atoi(argv[4+i]);
+            strcpy(cat, argv[5+i]);
+            strcpy(due, argv[6+i]);
+            if (!strcmp(argv[2+i],"") || !strcmp(argv[3+i], "")) //If Title or Description empty
                 usage();
-            add(argv[2+i], argv[3+i], argv[4+i], argv[5+i], argv[6+i]);
-            exit(0);
+            if (!strcmp(argv[4+i],"")) //If priority empty
+                priority=0;
+            else if (!strcmp(argv[5+i],"")) //If category empty
+                strcpy(cat,"");
+            else if (!strcmp(argv[6+i],"")) //If Due Date empty
+                strcpy(due,"");
+            add(title, desc, priority, cat, due);
         } else if (i + 1 == argc)
             usage();
         else
