@@ -8,10 +8,13 @@
 #include "shadomenu.h"
 
 typedef struct Entry Entry;
-struct Entry {
-    char name[96];
-    char descstr[512];
-    
+struct Rules {
+    char VERSION[3];
+    int priority;
+    char title[96];
+    char desc[512];
+    char cat[36];
+    char due[8];
 };
 
 // Function Declaration
@@ -22,7 +25,7 @@ void list (char method[]);
 void add (char title[], char desc[], int priority, char category[], char due[]) {
     FILE *fp;
     // Opens and writes data to file
-    fp = fopen("/home/shadow/.todos/todo", "a");
+    fp = fopen(tdpath, "a");
     fprintf(fp, "\"%s\",%s,%d,\"%s\",\"%s\"\n",title,desc,priority,category,due); 
     // Close Opened File
     fclose(fp);
@@ -30,25 +33,38 @@ void add (char title[], char desc[], int priority, char category[], char due[]) 
 
 // -l/--list option, displays list in specified way
 void list (char method[]) {
-    /* FILE *fp; */
-    // Opens and reads data
-    /* fp = fopen("/home/shadow/.todos/todo", "r"); */
-    
-    printf("SUCCESS\n");
-    printf("%s\n",method);
-    exit(0);
+    FILE *fp;
+    char buf[652];
 
+    // Opens and reads data
+    fp = fopen(tdpath, "r");
+
+    while (fgets(buf, sizeof(buf), fp) != 0) {
+        /* fgets(buf, 652, fp); */
+        printf("%s",method);
+        if (!strcmp(method,"tree")) {
+            
+        } else if (!strcmp(method,"plain")) {
+            printf("%s",buf);
+        } else if (!strcmp(method,"interactive")) {
+            
+        } else if (!strcmp(method,"date")) {
+            
+        } else if (!strcmp(method, "priority")) {
+
+        }
+    }
     // Close Opened File
-    /* fclose(fp); */
+    fclose(fp);
 }
 
 int main (int argc, char *argv[]) {
-    char VERSION[3] = "1.0";
-    int priority, TUI = 1;
-    char title[96],desc[512],cat[30],due[7];
+    struct Rules r;
+    int TUI = 1;
+    strncpy(r.VERSION, "1.0", 3);
     // Checks if options given, if not then runs Tui
     if (argc==2 && (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version"))) { // Prints Version
-        printf("shadoplan-%s\n", VERSION);
+        printf("shadoplan-%s\n", r.VERSION);
         exit(0);
     } else if (argc==2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) { // General Help Menu
         printf("Run 'man shadoplan' for full documentation.\n");
@@ -61,28 +77,28 @@ int main (int argc, char *argv[]) {
             if (argc < 5) //If Title or Description empty
                 usage();
             else if (argc < 6) //If priority empty
-                priority=0;
+                r.priority=0;
             else if (argc < 7) { //If category empty
-                priority=atoi(argv[5]);
-                strcpy(cat,"");
+                r.priority=atoi(argv[5]);
+                strcpy(r.cat,"");
             } else if (argc < 8) { //If Due Date empty
-                priority=atoi(argv[5]);
-                strcpy(cat, argv[6]);
-                strcpy(due,"");
+                r.priority=atoi(argv[5]);
+                strcpy(r.cat, argv[6]);
+                strcpy(r.due,"");
             } else if (argc > 8)
                 usage();
             else {
-                priority=atoi(argv[5]);
-                strcpy(cat, argv[6]);
-                strcpy(due, argv[7]);
+                r.priority=atoi(argv[5]);
+                strcpy(r.cat, argv[6]);
+                strcpy(r.due, argv[7]);
             }
-            if(!(priority >= 0 && priority < 10)) {
+            if(!(r.priority >= 0 && r.priority < 10)) {
                 printf("Priority must be a digit (0-9)\n");
                 usage();
             }
-            strcpy(title, argv[3]);
-            strcpy(desc, argv[4]);
-            add(title, desc, priority, cat, due);
+            strcpy(r.title, argv[3]);
+            strcpy(r.desc, argv[4]);
+            add(r.title, r.desc, r.priority, r.cat, r.due);
             exit(0);
         } else if (!strcmp(argv[2], "-l") || (!strcmp(argv[2], "--list"))) { // List Option
             if (argc < 4)
@@ -95,8 +111,11 @@ int main (int argc, char *argv[]) {
                 list("interactive");
             else if (argc==4 && !strcmp(argv[3], "date"))
                 list("date");
+            else if (argc==4 && !strcmp(argv[3], "priority"))
+                list("priority");
             else
                 helpText('t');
+            exit(0);
         } else
             usage();
     }
