@@ -16,9 +16,30 @@ struct Entry {
 
 // Function Declaration
 void add (char title[], char desc[], int priority, char category[], char due[]);
+void list (char method[]);
 
+// -a/--add option, adds new todo to list
 void add (char title[], char desc[], int priority, char category[], char due[]) {
+    FILE *fp;
+    // Opens and writes data to file
+    fp = fopen("/home/shadow/.todos/todo", "a");
+    fprintf(fp, "\"%s\",%s,%d,\"%s\",\"%s\"\n",title,desc,priority,category,due); 
+    // Close Opened File
+    fclose(fp);
+}
 
+// -l/--list option, displays list in specified way
+void list (char method[]) {
+    /* FILE *fp; */
+    // Opens and reads data
+    /* fp = fopen("/home/shadow/.todos/todo", "r"); */
+    
+    printf("SUCCESS\n");
+    printf("%s\n",method);
+    exit(0);
+
+    // Close Opened File
+    /* fclose(fp); */
 }
 
 int main (int argc, char *argv[]) {
@@ -61,13 +82,21 @@ int main (int argc, char *argv[]) {
             }
             strcpy(title, argv[3]);
             strcpy(desc, argv[4]);
-            printf("TITLE: %s\n", title);
-            printf("DESC: %s\n", desc);
-            printf("PRIORITY: %d\n", priority);
-            printf("CAT: %s\n", cat);
-            printf("DUE: %s\n", due);
             add(title, desc, priority, cat, due);
             exit(0);
+        } else if (!strcmp(argv[2], "-l") || (!strcmp(argv[2], "--list"))) { // List Option
+            if (argc < 4)
+                list("tree");
+            else if (argc==4 && !strcmp(argv[3], "tree"))
+                list("tree");
+            else if (argc==4 && !strcmp(argv[3], "plain"))
+                list("plain");
+            else if (argc==4 && !strcmp(argv[3], "interactive"))
+                list("interactive");
+            else if (argc==4 && !strcmp(argv[3], "date"))
+                list("date");
+            else
+                helpText('t');
         } else
             usage();
     }

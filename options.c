@@ -18,7 +18,7 @@ void helpText(char arg) {
         printf("    -x, --check [Title]             Fuzzy finds todo by title and checks it (Goes to completed TODOs)\n");
         printf("              [level]                    Level[1-10]: level of completion for the TODO (Default: 10)\n");
         printf("    -l, --list [format]             Lists TODOs in specified way\n");
-        printf("                                         Formats: tree, plain, interactive, date\n");
+        printf("                                         Formats: tree, plain, interactive, date (Default: tree)\n");
         printf("    -s, --set [FILE]                Sets the TODO list to be used\n");
         printf("    -h                              Displays this help message\n");
     } else if (arg == 'c') {
