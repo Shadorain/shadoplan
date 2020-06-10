@@ -15,20 +15,39 @@ struct Rules {
     char desc[512];
     char cat[36];
     char due[8];
+
+    // Allows for 2048 Categories of size 36
+    char cats[36][512];
 };
 
 // Function Declaration
-void add (char title[], char desc[], int priority, char category[], char due[]);
+void add (struct Rules r);
 void list (char method[]);
 
 // -a/--add option, adds new todo to list
-void add (char title[], char desc[], int priority, char category[], char due[]) {
-    FILE *fp;
+void add (struct Rules r) {
+    FILE *td;
+    FILE *ct;
+    char buf[36];
+    char *bufcat;
+
     // Opens and writes data to file
-    fp = fopen(tdpath, "a");
-    fprintf(fp, "\"%s\",%s,%d,\"%s\",\"%s\"\n",title,desc,priority,category,due); 
+    td = fopen(tdpath, "a");
+    fprintf(td, "\"%s\",\"%s\",\"%d\",\"%s\",\"%s\"\n",r.title,r.desc,r.priority,r.cat,r.due); 
     // Close Opened File
-    fclose(fp);
+    fclose(td);
+
+    // Check categories file if added category exists, if not add
+    ct = fopen(categories, "a+");
+    while (fgets(buf, sizeof(buf), ct) != 0) {
+        if (strcmp(buf,r.cat))
+            fprintf(ct, "%s\n",r.cat);
+    }
+    /* for (int i=0; i<3; i++) { */ 
+    /*     bufcat = strtok(buf, "\",\""); */
+    /* } */
+    /* printf("%s",bufcat); */
+    fclose(ct);
 }
 
 // -l/--list option, displays list in specified way
@@ -39,9 +58,11 @@ void list (char method[]) {
     // Opens and reads data
     fp = fopen(tdpath, "r");
 
+    if (!strcmp(method,"plain"))
+        printf("Title, Description, Priority, Category, Due-Date\n");
+
     while (fgets(buf, sizeof(buf), fp) != 0) {
         /* fgets(buf, 652, fp); */
-        printf("%s",method);
         if (!strcmp(method,"tree")) {
             
         } else if (!strcmp(method,"plain")) {
@@ -98,7 +119,7 @@ int main (int argc, char *argv[]) {
             }
             strcpy(r.title, argv[3]);
             strcpy(r.desc, argv[4]);
-            add(r.title, r.desc, r.priority, r.cat, r.due);
+            add(r);
             exit(0);
         } else if (!strcmp(argv[2], "-l") || (!strcmp(argv[2], "--list"))) { // List Option
             if (argc < 4)
