@@ -29,7 +29,7 @@ void add (struct Rules r) {
     FILE *td;
     FILE *ct;
     char buf[36];
-    char *bufcat;
+    int catadd = 1;
 
     // Opens and writes data to file
     td = fopen(tdpath, "a");
@@ -37,16 +37,21 @@ void add (struct Rules r) {
     // Close Opened File
     fclose(td);
 
-    // Check categories file if added category exists, if not add
+    // Check categories file if added category exists, if not then add
     ct = fopen(categories, "a+");
     while (fgets(buf, sizeof(buf), ct) != 0) {
-        if (strcmp(buf,r.cat))
-            fprintf(ct, "%s\n",r.cat);
+        size_t len = strlen(buf);
+        if (len > 0 && buf[len-1] == '\n')
+            buf[--len] = '\0';
+        if (strcmp(buf, r.cat)) {
+            catadd=1;
+        } else {
+            catadd=0;
+            break;
+        }
     }
-    /* for (int i=0; i<3; i++) { */ 
-    /*     bufcat = strtok(buf, "\",\""); */
-    /* } */
-    /* printf("%s",bufcat); */
+    if(catadd==1)
+        fprintf(ct, "%s\n",r.cat);
     fclose(ct);
 }
 
