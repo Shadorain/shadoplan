@@ -22,9 +22,10 @@ struct Rules {
 
 // Function Declaration
 void add (struct Rules r);
+int catClean();
 void list (char method[]);
 
-// -a/--add option, adds new todo to list
+// t -a/--add option, adds new todo to list
 void add (struct Rules r) {
     FILE *td;
     FILE *ct;
@@ -43,9 +44,9 @@ void add (struct Rules r) {
         size_t len = strlen(buf);
         if (len > 0 && buf[len-1] == '\n')
             buf[--len] = '\0';
-        if (strcmp(buf, r.cat)) {
+        if (strcmp(buf, r.cat))
             catadd=1;
-        } else {
+        else {
             catadd=0;
             break;
         }
@@ -55,8 +56,26 @@ void add (struct Rules r) {
     fclose(ct);
 }
 
-// -l/--list option, displays list in specified way
-void list (char method[]) {
+// c -c/--clean option, cleans categories file
+int catClean() {
+    FILE *ct;
+    FILE *fp;
+    char buf[36];
+    char *awkcmd = "cat ~/.todos/cats | awk -F\",\" '{print $4}'";
+    
+    fp = popen(awkcmd, "r");
+    ct = fopen(categories, "w");
+    while (fgets(buf, sizeof(buf), ct) != 0) {
+        fprintf(ct, "%s",buf);
+    }
+    fclose(fp);
+    fclose(ct);
+
+    return 0;
+}
+
+// t -l/--list option, displays list in specified way
+void list(char method[]) {
     FILE *fp;
     char buf[652];
 
@@ -84,7 +103,7 @@ void list (char method[]) {
     fclose(fp);
 }
 
-int main (int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
     struct Rules r;
     int TUI = 1;
     strncpy(r.VERSION, "1.0", 3);
@@ -95,11 +114,11 @@ int main (int argc, char *argv[]) {
     } else if (argc==2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) { // General Help Menu
         printf("Run 'man shadoplan' for full documentation.\n");
         usage();
-    } else if (argc > 2) {
+    } else if (argc > 2 && (!strcmp(argv[1],"t") || !strcmp(argv[1],"c") || !strcmp(argv[1],"x"))) {
         if (!strcmp(argv[2], "-h") || !strcmp(argv[2], "--help")) { // Depth Help Menu
             char arg=*argv[1];
             helpText(arg);
-        } else if (!strcmp(argv[2], "-a") || (!strcmp(argv[2], "--add"))) { // Add Option
+        } else if (!strcmp(argv[1],"t") && (!strcmp(argv[2], "-a") || !strcmp(argv[2], "--add"))) { // t:Add Option
             if (argc < 5) //If Title or Description empty
                 usage();
             else if (argc < 6) //If priority empty
@@ -126,7 +145,7 @@ int main (int argc, char *argv[]) {
             strcpy(r.desc, argv[4]);
             add(r);
             exit(0);
-        } else if (!strcmp(argv[2], "-l") || (!strcmp(argv[2], "--list"))) { // List Option
+        } else if (!strcmp(argv[1],"t") && (!strcmp(argv[2], "-l") || !strcmp(argv[2], "--list"))) { // t: List Option
             if (argc < 4)
                 list("tree");
             else if (argc==4 && !strcmp(argv[3], "tree"))
@@ -142,9 +161,18 @@ int main (int argc, char *argv[]) {
             else
                 helpText('t');
             exit(0);
+        } else if (!strcmp(argv[1],"c") && (!strcmp(argv[2], "-c") || !strcmp(argv[2], "--clean"))) { // c: Clean Option: 
+            int CHECK = catClean();
+            if(CHECK==0)
+                printf("Successfully cleaned cats file");
+            else
+                printf("Something went wrong when cleaning cats file");
+            exit(0);
         } else
             usage();
-    }
+    } else
+        usage();
+
 
     if (TUI==1) {
         int STATE = shadoplanCurses(); //Start NCurses
