@@ -22,7 +22,7 @@ struct Rules {
 
 // Function Declaration
 void add (struct Rules r);
-int catClean();
+void catClean();
 void list (char method[]);
 
 // t -a/--add option, adds new todo to list
@@ -57,21 +57,36 @@ void add (struct Rules r) {
 }
 
 // c -c/--clean option, cleans categories file
-int catClean() {
+void catClean() {
     FILE *ct;
     FILE *fp;
     char buf[36];
-    char *awkcmd = "cat ~/.todos/cats | awk -F\",\" '{print $4}'";
+    char buf2[36];
+    char *awkcmd = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $4}'";
     
-    fp = popen(awkcmd, "r");
+    fp = popen(awkcmd,"r");
     ct = fopen(categories, "w");
-    while (fgets(buf, sizeof(buf), ct) != 0) {
-        fprintf(ct, "%s",buf);
+    
+    while (fgets(buf, sizeof(buf), fp) != 0) {
+        while (fgets(buf2, sizeof(buf), fp) != 0) {
+            size_t len = strlen(buf);
+            if (len > 0 && buf[len-1] == '\n')
+                buf[--len] = '\0';
+            if (strcmp(buf, buf2)) {
+            fprintf(ct, "%s",buf);
+                printf("%s\n", buf2);
+                continue;
+            } else {
+                printf("%s\n", buf2);
+                break;
+            }
+        }
+        printf("%s",buf);
+        /* fprintf(ct, "%s",buf); */
     }
     fclose(fp);
     fclose(ct);
-
-    return 0;
+    printf("Successfully cleaned categories file\n");
 }
 
 // t -l/--list option, displays list in specified way
@@ -162,11 +177,7 @@ int main(int argc, char *argv[]) {
                 helpText('t');
             exit(0);
         } else if (!strcmp(argv[1],"c") && (!strcmp(argv[2], "-c") || !strcmp(argv[2], "--clean"))) { // c: Clean Option: 
-            int CHECK = catClean();
-            if(CHECK==0)
-                printf("Successfully cleaned cats file");
-            else
-                printf("Something went wrong when cleaning cats file");
+            catClean();
             exit(0);
         } else
             usage();
