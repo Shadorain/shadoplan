@@ -16,7 +16,7 @@ struct Rules {
     char cat[36];
     char due[8];
 
-    // Allows for 2048 Categories of size 36
+    // Allows for 512 Categories of size 36
     char cats[36][512];
 };
 
@@ -60,30 +60,24 @@ void add (struct Rules r) {
 void catClean() {
     FILE *ct;
     FILE *fp;
+    int count = 0;
     char buf[36];
     char buf2[36];
-    char *awkcmd = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $4}'";
+    char *awkcmd = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $4}'"; //Declared awk command here
     
     fp = popen(awkcmd,"r");
     ct = fopen(categories, "w");
-    
+
     while (fgets(buf, sizeof(buf), fp) != 0) {
-        while (fgets(buf2, sizeof(buf), fp) != 0) {
-            size_t len = strlen(buf);
-            if (len > 0 && buf[len-1] == '\n')
-                buf[--len] = '\0';
-            if (strcmp(buf, buf2)) {
-            fprintf(ct, "%s",buf);
-                printf("%s\n", buf2);
-                continue;
-            } else {
-                printf("%s\n", buf2);
-                break;
-            }
+        while (fgets(buf2, sizeof(buf2), fp) != 0) {
+            if (strcmp(buf,buf2))
+                printf("Buf2: %s",buf2);
         }
-        printf("%s",buf);
-        /* fprintf(ct, "%s",buf); */
+        printf("Buf1: %s",buf);
     }
+    
+    /* printf("%s",buf); */
+    /* fprintf(ct, "%s",buf); */
     fclose(fp);
     fclose(ct);
     printf("Successfully cleaned categories file\n");
@@ -91,17 +85,17 @@ void catClean() {
 
 // t -l/--list option, displays list in specified way
 void list(char method[]) {
-    FILE *fp;
+    FILE *td;
     char buf[652];
 
     // Opens and reads data
-    fp = fopen(tdpath, "r");
+    td = fopen(tdpath, "r");
 
     if (!strcmp(method,"plain"))
         printf("Title, Description, Priority, Category, Due-Date\n");
 
-    while (fgets(buf, sizeof(buf), fp) != 0) {
-        /* fgets(buf, 652, fp); */
+    while (fgets(buf, sizeof(buf), td) != 0) {
+        /* fgets(buf, 652, td); */
         if (!strcmp(method,"tree")) {
             
         } else if (!strcmp(method,"plain")) {
@@ -115,7 +109,7 @@ void list(char method[]) {
         }
     }
     // Close Opened File
-    fclose(fp);
+    fclose(td);
 }
 
 int main(int argc, char *argv[]) {
