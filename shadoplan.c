@@ -70,7 +70,7 @@ void catClean() {
 
     while (fgets(buf, sizeof(buf), fp) != 0) {
         while (fgets(buf2, sizeof(buf2), fp) != 0) {
-            if (strcmp(buf,buf2))
+            if (!strcmp(buf,buf2))
                 printf("Buf2: %s",buf2);
         }
         printf("Buf1: %s",buf);
