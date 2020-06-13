@@ -60,20 +60,17 @@ void add (struct Rules r) {
 void catClean() {
     FILE *ct;
     FILE *fp;
-    int count = 0;
+    char *tmp;
+    int count=0;
     char buf[36];
     char buf2[36];
-    char *awkcmd = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $4}'"; //Declared awk command here
+    char *awkcmd = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $4}' | awk '!visited[$0]++'"; //Declared awk command here
     
     fp = popen(awkcmd,"r");
     ct = fopen(categories, "w");
 
     while (fgets(buf, sizeof(buf), fp) != 0) {
-        while (fgets(buf2, sizeof(buf2), fp) != 0) {
-            if (!strcmp(buf,buf2))
-                printf("Buf2: %s",buf2);
-        }
-        printf("Buf1: %s",buf);
+        fprintf(ct, "%s",buf);
     }
     
     /* printf("%s",buf); */
