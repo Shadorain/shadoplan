@@ -7,28 +7,43 @@
 #include "options.h"
 #include "shadomenu.h"
 
-typedef struct Entry Entry;
+#define MAX_CATEGORIES 50
+#define MAX_TODOS 1000
+
 struct Rules {
     char VERSION[3];
     int priority;
+    char pri[2];
     char title[96];
     char desc[512];
     char cat[36];
     char due[8];
 
-    // Allows for 512 Categories of size 36
-    char cats[36][512];
+    // Commands
+    char *col1;
+    char *col2;
+    char *col3;
+    char *col4;
+    char *col5;
+
+    // Dynamic Alloc
+    char *cats[MAX_CATEGORIES];
+    char *c1[MAX_TODOS];
+    char *c2[MAX_TODOS];
+    char *c3[MAX_TODOS];
+    char *c4[MAX_TODOS];
+    char *c5[MAX_TODOS];
 };
 
 // Function Declaration
 void add (struct Rules r);
 void catClean();
-void list (char method[]);
+void list (struct Rules r, char method[]);
+void listTree(struct Rules r);
 
 // t -a/--add option, adds new todo to list
 void add (struct Rules r) {
-    FILE *td;
-    FILE *ct;
+    FILE *td, *ct;
     char buf[36];
     int catadd = 1;
 
@@ -58,44 +73,48 @@ void add (struct Rules r) {
 
 // c -c/--clean option, cleans categories file
 void catClean() {
-    FILE *ct;
-    FILE *fp;
-    char *tmp;
-    int count=0;
+    FILE *ct, *fp;
     char buf[36];
-    char buf2[36];
     char *awkcmd = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $4}' | awk '!visited[$0]++'"; //Declared awk command here
-    
-    fp = popen(awkcmd,"r");
-    ct = fopen(categories, "w");
 
-    while (fgets(buf, sizeof(buf), fp) != 0) {
-        fprintf(ct, "%s",buf);
+    // Clean Confirmation
+    printf("--<| This will rebuild all current categories and remove extras not in use. |>-- \nContinue [Y/n] ❱ ");
+    char c = getchar();
+    if (c=='y'||c=='Y') {
+        fp = popen(awkcmd,"r");
+        ct = fopen(categories, "w");
+        // Reads all lines from awkcmd output and prints them to ct file
+        while (fgets(buf, sizeof(buf), fp) != 0) {
+            fprintf(ct, "%s",buf);
+        }
+        // Clean up
+        fclose(fp);
+        fclose(ct);
+        printf("<--| Successfully cleaned categories file |-->\n");
     }
-    
-    /* printf("%s",buf); */
-    /* fprintf(ct, "%s",buf); */
-    fclose(fp);
-    fclose(ct);
-    printf("Successfully cleaned categories file\n");
 }
 
 // t -l/--list option, displays list in specified way
-void list(char method[]) {
+void list(struct Rules r, char method[]) {
     FILE *td;
     char buf[652];
+    r.col1 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $1}' | cut -c2-";
+    r.col2 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $2}'";
+    r.col3 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $3}'";
+    r.col4 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $4}'";
+    r.col5 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $3}' | rev | cut -c2- | rev";
 
-    // Opens and reads data
-    td = fopen(tdpath, "r");
+    if (!strcmp(method,"tree"))
+        listTree(r);
 
     if (!strcmp(method,"plain"))
         printf("Title, Description, Priority, Category, Due-Date\n");
 
+    // Opens and reads data
+    td = fopen(tdpath, "r");
     while (fgets(buf, sizeof(buf), td) != 0) {
         /* fgets(buf, 652, td); */
-        if (!strcmp(method,"tree")) {
-            
-        } else if (!strcmp(method,"plain")) {
+        if (!strcmp(method,"plain")) {
             printf("%s",buf);
         } else if (!strcmp(method,"interactive")) {
             
@@ -107,6 +126,91 @@ void list(char method[]) {
     }
     // Close Opened File
     fclose(td);
+}
+
+void listTree(struct Rules r) {
+    FILE *c1, *c2, *c3, *c4, *c5, *ct;
+    int count=0;
+    char buf[36];
+
+    c1 = popen(r.col1, "r");
+    c2 = popen(r.col2, "r");
+    c3 = popen(r.col3, "r");
+    c4 = popen(r.col4, "r");
+    c5 = popen(r.col5, "r");
+    ct = fopen(categories, "r");
+
+    // Get each category to branch from
+    memset(r.cats, 0, MAX_CATEGORIES * sizeof(char *));
+    int i=0;
+    while (fgets(buf, sizeof(buf), ct) != 0) {
+        r.cats[i] = malloc(strlen(buf) + 1);
+        if (r.cats[i])
+            strcpy(r.cats[i], buf);
+        i++;
+    }
+
+    // Grabs each title
+    memset(r.c1, 0, MAX_CATEGORIES * sizeof(char *));
+    i=0;
+    while (fgets(r.title, sizeof(buf), c1) != 0) {
+        r.cats[i] = malloc(strlen(r.title) + 1);
+        if (r.cats[i])
+            strcpy(r.c1[i], r.title);
+        i++;
+    }
+
+    // Grabs each description
+    memset(r.c2, 0, MAX_CATEGORIES * sizeof(char *));
+    i=0;
+    while (fgets(r.desc, sizeof(r.desc), c2) != 0) {
+        r.cats[i] = malloc(strlen(r.desc) + 1);
+        if (r.cats[i])
+            strcpy(r.c2[i], r.desc);
+        i++;
+    }
+
+    // Grabs each priority
+    memset(r.c3, 0, MAX_CATEGORIES * sizeof(char *));
+    i=0;
+    while (fgets(r.pri, sizeof(r.pri), c3) != 0) {
+        r.cats[i] = malloc(strlen(r.pri) + 1);
+        if (r.cats[i])
+            strcpy(r.c3[i], r.pri);
+        i++;
+    }
+
+    // Grabs each category
+    memset(r.c4, 0, MAX_CATEGORIES * sizeof(char *));
+    i=0;
+    while (fgets(r.cat, sizeof(r.cat), c4) != 0) {
+        r.cats[i] = malloc(strlen(r.cat) + 1);
+        if (r.cats[i])
+            strcpy(r.c4[i], r.cat);
+        i++;
+    }
+
+    // Grabs each time
+    memset(r.c5, 0, MAX_CATEGORIES * sizeof(char *));
+    i=0;
+    while (fgets(r.due, sizeof(r.due), c5) != 0) {
+        r.cats[i] = malloc(strlen(r.due) + 1);
+        if (r.cats[i])
+            strcpy(r.c5[i], r.due);
+        i++;
+    }
+    
+    printf("%s",r.c1[2]);
+    printf("%s",r.c2[2]);
+    printf("%s",r.c3[2]);
+    printf("%s",r.c4[2]);
+    printf("%s",r.c5[2]);
+
+    fclose(c1);
+    fclose(c2);
+    fclose(c3);
+    fclose(c4);
+    fclose(c5);
 }
 
 int main(int argc, char *argv[]) {
@@ -153,17 +257,17 @@ int main(int argc, char *argv[]) {
             exit(0);
         } else if (!strcmp(argv[1],"t") && (!strcmp(argv[2], "-l") || !strcmp(argv[2], "--list"))) { // t: List Option
             if (argc < 4)
-                list("tree");
+                list(r, "tree");
             else if (argc==4 && !strcmp(argv[3], "tree"))
-                list("tree");
+                list(r, "tree");
             else if (argc==4 && !strcmp(argv[3], "plain"))
-                list("plain");
+                list(r, "plain");
             else if (argc==4 && !strcmp(argv[3], "interactive"))
-                list("interactive");
+                list(r, "interactive");
             else if (argc==4 && !strcmp(argv[3], "date"))
-                list("date");
+                list(r, "date");
             else if (argc==4 && !strcmp(argv[3], "priority"))
-                list("priority");
+                list(r, "priority");
             else
                 helpText('t');
             exit(0);
