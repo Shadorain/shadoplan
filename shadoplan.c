@@ -13,7 +13,7 @@
 struct Rules {
     char VERSION[3];
     int priority;
-    char pri[2];
+    char pri[4];
     char title[96];
     char desc[512];
     char cat[36];
@@ -133,14 +133,8 @@ void listTree(struct Rules r) {
     int count=0;
     char buf[36];
 
-    c1 = popen(r.col1, "r");
-    c2 = popen(r.col2, "r");
-    c3 = popen(r.col3, "r");
-    c4 = popen(r.col4, "r");
-    c5 = popen(r.col5, "r");
-    ct = fopen(categories, "r");
-
     // Get each category to branch from
+    ct = fopen(categories, "r");
     memset(r.cats, 0, MAX_CATEGORIES * sizeof(char *));
     int i=0;
     while (fgets(buf, sizeof(buf), ct) != 0) {
@@ -149,68 +143,75 @@ void listTree(struct Rules r) {
             strcpy(r.cats[i], buf);
         i++;
     }
+    fclose(ct);
 
     // Grabs each title
-    memset(r.c1, 0, MAX_CATEGORIES * sizeof(char *));
+    c1 = popen(r.col1, "r");
+    memset(r.c1, 0, MAX_TODOS * sizeof(char *));
     i=0;
-    while (fgets(r.title, sizeof(buf), c1) != 0) {
-        r.cats[i] = malloc(strlen(r.title) + 1);
-        if (r.cats[i])
+    while (fgets(r.title, sizeof(r.title), c1) != 0) {
+        r.c1[i] = malloc(strlen(r.title) + 1);
+        if (r.c1[i])
             strcpy(r.c1[i], r.title);
         i++;
     }
+    fclose(c1);
 
     // Grabs each description
-    memset(r.c2, 0, MAX_CATEGORIES * sizeof(char *));
+    c2 = popen(r.col2, "r");
+    memset(r.c2, 0, MAX_TODOS * sizeof(char *));
     i=0;
     while (fgets(r.desc, sizeof(r.desc), c2) != 0) {
-        r.cats[i] = malloc(strlen(r.desc) + 1);
-        if (r.cats[i])
+        r.c2[i] = malloc(strlen(r.desc) + 1);
+        if (r.c2[i])
             strcpy(r.c2[i], r.desc);
         i++;
     }
+    fclose(c2);
 
     // Grabs each priority
-    memset(r.c3, 0, MAX_CATEGORIES * sizeof(char *));
+    c3 = popen(r.col3, "r");
+    memset(r.c3, 0, MAX_TODOS * sizeof(char *));
     i=0;
     while (fgets(r.pri, sizeof(r.pri), c3) != 0) {
-        r.cats[i] = malloc(strlen(r.pri) + 1);
-        if (r.cats[i])
+        r.c3[i] = malloc(strlen(r.pri) + 1);
+        if (r.c3[i])
             strcpy(r.c3[i], r.pri);
         i++;
     }
+    fclose(c3);
 
     // Grabs each category
-    memset(r.c4, 0, MAX_CATEGORIES * sizeof(char *));
+    c4 = popen(r.col4, "r");
+    memset(r.c4, 0, MAX_TODOS * sizeof(char *));
     i=0;
     while (fgets(r.cat, sizeof(r.cat), c4) != 0) {
-        r.cats[i] = malloc(strlen(r.cat) + 1);
-        if (r.cats[i])
+        r.c4[i] = malloc(strlen(r.cat) + 1);
+        if (r.c4[i])
             strcpy(r.c4[i], r.cat);
         i++;
     }
+    fclose(c4);
 
     // Grabs each time
-    memset(r.c5, 0, MAX_CATEGORIES * sizeof(char *));
+    c5 = popen(r.col5, "r");
+    memset(r.c5, 0, MAX_TODOS * sizeof(char *));
     i=0;
     while (fgets(r.due, sizeof(r.due), c5) != 0) {
-        r.cats[i] = malloc(strlen(r.due) + 1);
-        if (r.cats[i])
+        printf("%s", r.due);
+        r.c5[i] = malloc(strlen(r.due) + 1);
+        if (r.c5[i])
             strcpy(r.c5[i], r.due);
         i++;
     }
+    fclose(c5);
     
+    // Test
     printf("%s",r.c1[2]);
     printf("%s",r.c2[2]);
     printf("%s",r.c3[2]);
     printf("%s",r.c4[2]);
     printf("%s",r.c5[2]);
-
-    fclose(c1);
-    fclose(c2);
-    fclose(c3);
-    fclose(c4);
-    fclose(c5);
 }
 
 int main(int argc, char *argv[]) {
