@@ -17,7 +17,7 @@ struct Rules {
     char title[96];
     char desc[512];
     char cat[36];
-    char due[8];
+    char due[16];
 
     // Commands
     char *col1;
@@ -198,20 +198,15 @@ void listTree(struct Rules r) {
     memset(r.c5, 0, MAX_TODOS * sizeof(char *));
     i=0;
     while (fgets(r.due, sizeof(r.due), c5) != 0) {
-        printf("%s", r.due);
         r.c5[i] = malloc(strlen(r.due) + 1);
         if (r.c5[i])
             strcpy(r.c5[i], r.due);
         i++;
     }
     fclose(c5);
-    
-    // Test
-    printf("%s",r.c1[2]);
-    printf("%s",r.c2[2]);
-    printf("%s",r.c3[2]);
-    printf("%s",r.c4[2]);
-    printf("%s",r.c5[2]);
+
+    // Check category that is the root. The check each todo category and put each in the correct spot.
+
 }
 
 int main(int argc, char *argv[]) {
