@@ -102,7 +102,7 @@ void list(struct Rules r, char method[]) {
     r.col2 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $2}'";
     r.col3 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $3}'";
     r.col4 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $4}'";
-    r.col5 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $3}' | rev | cut -c2- | rev";
+    r.col5 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $5}' | rev | cut -c2- | rev";
 
     if (!strcmp(method,"tree"))
         listTree(r);
