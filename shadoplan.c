@@ -18,6 +18,9 @@ struct Rules {
     char desc[512];
     char cat[36];
     char due[16];
+    char cdue[16];
+    char date[16];
+    char cdate[16];
 
     // Commands
     char *col1;
@@ -25,6 +28,7 @@ struct Rules {
     char *col3;
     char *col4;
     char *col5;
+    char *col6;
 
     // Dynamic Alloc
     char *cats[MAX_CATEGORIES];
@@ -33,13 +37,18 @@ struct Rules {
     char *c3[MAX_TODOS];
     char *c4[MAX_TODOS];
     char *c5[MAX_TODOS];
+    char *c6[MAX_TODOS];
 };
 
 // Function Declaration
 void add (struct Rules r);
 void catClean();
 void list (struct Rules r, char method[]);
+void listDate(struct Rules r);
+void listPriority(struct Rules r);
 void listTree(struct Rules r);
+int validateTime(int hour, int min, struct Rules r);
+int validateDate(int month, int day, struct Rules r);
 
 // t -a/--add option, adds new todo to list
 void add (struct Rules r) {
@@ -49,7 +58,7 @@ void add (struct Rules r) {
 
     // Opens and writes data to file
     td = fopen(tdpath, "a");
-    fprintf(td, "\"%s\",\"%s\",\"%d\",\"%s\",\"%s\"\n",r.title,r.desc,r.priority,r.cat,r.due); 
+    fprintf(td, "\"%s\",\"%s\",\"%d\",\"%s\",\"%s\",\"%s\"\n",r.title,r.desc,r.priority,r.cat,r.due,r.date); 
     // Close Opened File
     fclose(td);
 
@@ -96,42 +105,16 @@ void catClean() {
 
 // t -l/--list option, displays list in specified way
 void list(struct Rules r, char method[]) {
-    FILE *td;
-    char buf[652];
+    FILE *c1, *c2, *c3, *c4, *c5, *c6, *ct, *td;
+    char buf[36];
+    char buffer[652];
+
     r.col1 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $1}' | cut -c2-";
     r.col2 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $2}'";
     r.col3 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $3}'";
     r.col4 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $4}'";
-    r.col5 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $5}' | rev | cut -c2- | rev";
-
-    if (!strcmp(method,"tree"))
-        listTree(r);
-
-    if (!strcmp(method,"plain"))
-        printf("Title, Description, Priority, Category, Due-Date\n");
-
-    // Opens and reads data
-    td = fopen(tdpath, "r");
-    while (fgets(buf, sizeof(buf), td) != 0) {
-        /* fgets(buf, 652, td); */
-        if (!strcmp(method,"plain")) {
-            printf("%s",buf);
-        } else if (!strcmp(method,"interactive")) {
-            
-        } else if (!strcmp(method,"date")) {
-            
-        } else if (!strcmp(method, "priority")) {
-
-        }
-    }
-    // Close Opened File
-    fclose(td);
-}
-
-void listTree(struct Rules r) {
-    FILE *c1, *c2, *c3, *c4, *c5, *ct;
-    int count=0;
-    char buf[36];
+    r.col5 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $5}'";
+    r.col6 = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $6}' | rev | cut -c2- | rev";
 
     // Get each category to branch from
     ct = fopen(categories, "r");
@@ -205,13 +188,88 @@ void listTree(struct Rules r) {
     }
     fclose(c5);
 
-    // Check category that is the root. The check each todo category and put each in the correct spot.
+    // Grabs each date
+    c6 = popen(r.col6, "r");
+    memset(r.c6, 0, MAX_TODOS * sizeof(char *));
+    i=0;
+    while (fgets(r.due, sizeof(r.due), c6) != 0) {
+        r.c6[i] = malloc(strlen(r.due) + 1);
+        if (r.c6[i])
+            strcpy(r.c6[i], r.due);
+        i++;
+    }
+    fclose(c6);
 
+    if (!strcmp(method,"tree"))
+        listTree(r);
+
+    if (!strcmp(method,"plain"))
+        printf("Title, Description, Priority, Category, Due-Time, Due-Date\n");
+
+    // Opens and reads data
+    td = fopen(tdpath, "r");
+    while (fgets(buffer, sizeof(buffer), td) != 0) {
+        /* fgets(buf, 652, td); */
+        if (!strcmp(method,"plain")) {
+            printf("%s",buffer);
+        } else if (!strcmp(method,"interactive")) {
+            
+        } else if (!strcmp(method,"date")) {
+            
+        } else if (!strcmp(method, "priority")) {
+
+        }
+    }
+    // Close Opened File
+    fclose(td);
+}
+
+void listDate(struct Rules r) {
+
+    // TODO: Order by date priority
+
+}
+
+void listPriority(struct Rules r) {
+
+    // TODO: Order each column by priority, all todos
+
+}
+
+void listTree(struct Rules r) {
+
+    // TODO: Check category that is the root. The check each todo category and put each in the correct spot.
+
+}
+
+int validateDate(int month, int day, struct Rules r) {
+    int ret=0;
+
+    if(month > 12 || month < 0) ret=1;
+    if(month==2 || month==4 || month==6 || month==9 || month==11 && (day > 30 || day < 0)) ret=1;
+    if(month==2 || (day > 29 || day < 0)) ret=1;
+    if(day > 31 || day < 0) ret=1;
+
+    if (month==0 || day==0) ret=2;
+
+    return ret;
+}
+
+int validateTime(int hour, int min, struct Rules r) {
+    int ret=0;
+
+    if(hour > 24 || hour < 0) ret=1;
+    if(min  > 60 || min  < 0) ret=1;
+    
+    if (hour==0 || min==0) ret=2;
+
+    return ret;
 }
 
 int main(int argc, char *argv[]) {
     struct Rules r;
-    int TUI = 1;
+    int TUI=1, check=0;
+    char buf[12]={0};
     strncpy(r.VERSION, "1.0", 3);
     // Checks if options given, if not then runs Tui
     if (argc==2 && (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version"))) { // Prints Version
@@ -232,17 +290,79 @@ int main(int argc, char *argv[]) {
             else if (argc < 7) { //If category empty
                 r.priority=atoi(argv[5]);
                 strcpy(r.cat,"");
-            } else if (argc < 8) { //If Due Date empty
+            } else if (argc < 8) { //If Due Time empty
                 r.priority=atoi(argv[5]);
                 strcpy(r.cat, argv[6]);
-                strcpy(r.due,"");
-            } else if (argc > 8)
-                usage();
-            else {
+                int hour=0,min=0;
+                printf("--<| Enter time or leave blank |>--\n[HH:MM]: ❱ ");
+                scanf("%02d:%02d",&hour,&min);
+                check=validateTime(hour, min, r);
+                if (check==1) {
+                    printf("Invalid Time\n");
+                    exit(0);
+                } else if (check==2)
+                    strcpy(r.due,"");
+                else {
+                    snprintf(r.cdue, 12, "%d:%d",hour,min);
+                    strcpy(r.due, r.cdue);
+                }
+            } else if (argc < 9) { //If Due Date empty
                 r.priority=atoi(argv[5]);
                 strcpy(r.cat, argv[6]);
                 strcpy(r.due, argv[7]);
+                int month=0,day=0;
+                printf("--<| Enter date or leave blank |>--\n[MM/DD]: ❱ ");
+                scanf("%02d/%02d",&month,&day);
+                check=validateDate(month, day, r);
+                if (check==1) {
+                    printf("Invalid Date\n");
+                    exit(0);
+                } else if (check==2)
+                    strcpy(r.date,"");
+                else {
+                    snprintf(r.cdate, 12, "%d/%d",month,day);
+                    strcpy(r.date, r.cdate);
+                }
+            } else if (argc > 9)
+                usage();
+            
+            if (argc >= 6 && argc < 10)
+                r.priority=atoi(argv[5]);
+            if (argc >= 7 && argc < 10)
+                strcpy(r.cat, argv[6]);
+            if (argc >= 8 && argc < 10) {
+                // Time
+                int hour=0,min=0;
+                strcpy(buf, argv[7]);
+                sscanf(buf,"%02d:%02d",&hour,&min);
+                check=validateTime(hour, min, r);
+                if (check==1) {
+                    printf("Invalid Time\n");
+                    exit(0);
+                } else if (check==2)
+                    strcpy(r.due,"");
+                else {
+                    snprintf(r.cdue, 12, "%d:%d",hour,min);
+                    strcpy(r.due, r.cdue);
+                }
             }
+            if (argc >= 9 && argc < 10) {
+                // Date
+                int month=0,day=0;
+                strcpy(buf, argv[8]);
+                sscanf(buf,"%02d/%02d",&month,&day);
+                check=validateDate(month, day, r);
+                if (check==1) {
+                    printf("Invalid Date\n");
+                    exit(0);
+                } else if (check==2)
+                    strcpy(r.date,"");
+                else {
+                    snprintf(r.cdate, 12, "%d/%d",month,day);
+                    strcpy(r.date, r.cdate);
+                }
+            }
+
             if(!(r.priority >= 0 && r.priority < 10)) {
                 printf("Priority must be a digit (0-9)\n");
                 usage();
