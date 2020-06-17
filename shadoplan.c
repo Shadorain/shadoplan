@@ -215,9 +215,9 @@ void list(struct Rules r, char method[]) {
         } else if (!strcmp(method,"interactive")) {
             
         } else if (!strcmp(method,"date")) {
-            
+            listDate(r);
         } else if (!strcmp(method, "priority")) {
-
+            listPriority(r);
         }
     }
     // Close Opened File
@@ -226,7 +226,12 @@ void list(struct Rules r, char method[]) {
 
 void listDate(struct Rules r) {
 
-    // TODO: Order by date priority
+    // TODO: Order by date/time priority
+        // First: Check dates/times of each accessible index, and find the most current
+    int hour=0,min=0;
+    printf("%s",r.c6[2]);
+    /* sscanf(r.c6[1], "%d:%d",&hour,&min); */
+    /* printf("%d@%d",hour,min); */
 
 }
 
