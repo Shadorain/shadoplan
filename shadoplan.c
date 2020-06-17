@@ -10,9 +10,13 @@
 #define MAX_CATEGORIES 50
 #define MAX_TODOS 1000
 
+struct DateTime {
+    int day, month; //hour, minute;
+};
+
 struct Rules {
     char VERSION[3];
-    int priority;
+    int priority,lines;
     char pri[4];
     char title[96];
     char desc[512];
@@ -43,6 +47,7 @@ struct Rules {
 // Function Declaration
 void add (struct Rules r);
 void catClean();
+int compare(const void *a, const void *b);
 void list (struct Rules r, char method[]);
 void listDate(struct Rules r);
 void listPriority(struct Rules r);
@@ -101,6 +106,21 @@ void catClean() {
         fclose(ct);
         printf("<--| Successfully cleaned categories file |-->\n");
     }
+}
+
+int compare(const void *a, const void *b) {
+    const struct DateTime * d1 = (const struct DateTime *) a;
+    const struct DateTime * d2 = (const struct DateTime *) b;
+    if (d1->month < d2->month)
+        return ( d1 - d2 );
+    if (d1->month == d2->month && d1->day < d2->day)
+        return ( d1 - d2 );
+    /* if (d1->hour < d2->hour) */
+    /*     return 1; */
+    /* if (d1->hour == d2->hour && d1->minute < d2->minute) */
+    /*     return 1; */
+    return 0;
+    /* return ( *(int*)a - *(int*)b ); */
 }
 
 // t -l/--list option, displays list in specified way
@@ -202,37 +222,47 @@ void list(struct Rules r, char method[]) {
 
     if (!strcmp(method,"tree"))
         listTree(r);
+    else if (!strcmp(method,"interactive")) {
+        
+    } else if (!strcmp(method,"date"))
+        listDate(r);
+    else if (!strcmp(method, "priority"))
+        listPriority(r);
 
+    // Plain
     if (!strcmp(method,"plain"))
         printf("Title, Description, Priority, Category, Due-Time, Due-Date\n");
-
-    // Opens and reads data
     td = fopen(tdpath, "r");
     while (fgets(buffer, sizeof(buffer), td) != 0) {
-        /* fgets(buf, 652, td); */
-        if (!strcmp(method,"plain")) {
+        if (!strcmp(method,"plain"))
             printf("%s",buffer);
-        } else if (!strcmp(method,"interactive")) {
-            
-        } else if (!strcmp(method,"date")) {
-            listDate(r);
-        } else if (!strcmp(method, "priority")) {
-            listPriority(r);
-        }
     }
-    // Close Opened File
     fclose(td);
 }
 
 void listDate(struct Rules r) {
-
     // TODO: Order by date/time priority
         // First: Check dates/times of each accessible index, and find the most current
-    int hour=0,min=0;
-    printf("%s",r.c6[2]);
-    /* sscanf(r.c6[1], "%d:%d",&hour,&min); */
-    /* printf("%d@%d",hour,min); */
+    int month=0,day=0;
+    int ndateInd[r.lines], dateInd[r.lines];
+    struct DateTime dates[r.lines];
 
+    for (int i=0; i < r.lines; i++) {
+        sscanf(r.c6[i], "%d/%d",&month,&day);
+        if(month==0 || day==0)
+            ndateInd[i]=i;
+        else {
+            dateInd[i]=i;
+            dates[i].month=month;
+            dates[i].day=day;
+        }
+    }
+
+    qsort(dates, r.lines, sizeof(int), compare);
+    for (int i=0;i<r.lines;i++)
+        printf("Date: %d/%d\n",dates[i].month, dates[i].day);
+
+    // Non Dated TODOs
 }
 
 void listPriority(struct Rules r) {
@@ -250,10 +280,10 @@ void listTree(struct Rules r) {
 int validateDate(int month, int day, struct Rules r) {
     int ret=0;
 
-    if(month > 12 || month < 0) ret=1;
-    if(month==2 || month==4 || month==6 || month==9 || month==11 && (day > 30 || day < 0)) ret=1;
-    if(month==2 || (day > 29 || day < 0)) ret=1;
-    if(day > 31 || day < 0) ret=1;
+    if(month > 12 || month < 1) ret=1;
+    if(month==4 || month==6 || month==9 || month==11 && (day > 30 || day < 1)) ret=1;
+    if(month==2 && (day > 29 || day < 1)) ret=1;
+    if(day > 31 || day < 1) ret=1;
 
     if (month==0 || day==0) ret=2;
 
@@ -263,8 +293,8 @@ int validateDate(int month, int day, struct Rules r) {
 int validateTime(int hour, int min, struct Rules r) {
     int ret=0;
 
-    if(hour > 24 || hour < 0) ret=1;
-    if(min  > 60 || min  < 0) ret=1;
+    if(hour > 24 || hour < 1) ret=1;
+    if(min  > 60 || min  < 1) ret=1;
     
     if (hour==0 || min==0) ret=2;
 
@@ -273,8 +303,13 @@ int validateTime(int hour, int min, struct Rules r) {
 
 int main(int argc, char *argv[]) {
     struct Rules r;
+    FILE *td;
     int TUI=1, check=0;
     char buf[12]={0};
+    td = fopen(tdpath, "r");
+    for (int c = getc(td); c != EOF; c = getc(td))
+    if (c == '\n')
+        r.lines = r.lines + 1;
     strncpy(r.VERSION, "1.0", 3);
     // Checks if options given, if not then runs Tui
     if (argc==2 && (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version"))) { // Prints Version
@@ -290,45 +325,41 @@ int main(int argc, char *argv[]) {
         } else if (!strcmp(argv[1],"t") && (!strcmp(argv[2], "-a") || !strcmp(argv[2], "--add"))) { // t:Add Option
             if (argc < 5) //If Title or Description empty
                 usage();
-            else if (argc < 6) //If priority empty
+            if (argc < 6) //If priority empty
                 r.priority=0;
-            else if (argc < 7) { //If category empty
-                r.priority=atoi(argv[5]);
+            if (argc < 7) //If category empty
                 strcpy(r.cat,"");
-            } else if (argc < 8) { //If Due Time empty
-                r.priority=atoi(argv[5]);
-                strcpy(r.cat, argv[6]);
+            if (argc < 8) { //If Due Time empty
                 int hour=0,min=0;
-                printf("--<| Enter time or leave blank |>--\n[HH:MM]: ❱ ");
-                scanf("%02d:%02d",&hour,&min);
+                printf("--<| Enter TIME or type n |>--\n[HH:MM]: ❱ ");
+                scanf("%d:%d",&hour,&min);
                 check=validateTime(hour, min, r);
                 if (check==1) {
                     printf("Invalid Time\n");
                     exit(0);
                 } else if (check==2)
-                    strcpy(r.due,"");
+                    strcpy(r.due,"0:0");
                 else {
                     snprintf(r.cdue, 12, "%d:%d",hour,min);
                     strcpy(r.due, r.cdue);
                 }
-            } else if (argc < 9) { //If Due Date empty
-                r.priority=atoi(argv[5]);
-                strcpy(r.cat, argv[6]);
-                strcpy(r.due, argv[7]);
-                int month=0,day=0;
-                printf("--<| Enter date or leave blank |>--\n[MM/DD]: ❱ ");
-                scanf("%02d/%02d",&month,&day);
-                check=validateDate(month, day, r);
-                if (check==1) {
-                    printf("Invalid Date\n");
-                    exit(0);
-                } else if (check==2)
-                    strcpy(r.date,"");
-                else {
-                    snprintf(r.cdate, 12, "%d/%d",month,day);
-                    strcpy(r.date, r.cdate);
-                }
-            } else if (argc > 9)
+            }
+            if (argc < 9) { //If Due Date empty
+               int month=0,day=0;
+               printf("--<| Enter DATE or type n |>--\n[MM/DD]: ❱ ");
+               scanf("%d/%d",&month,&day);
+               check=validateDate(month, day, r);
+               if (check==1) {
+                   printf("Invalid Date\n");
+                   exit(0);
+               } else if (check==2)
+                   strcpy(r.date,"0/0");
+               else {
+                   snprintf(r.cdate, 12, "%d/%d",month,day);
+                   strcpy(r.date, r.cdate);
+               }
+            }
+            if (argc > 9)
                 usage();
             
             if (argc >= 6 && argc < 10)
@@ -339,13 +370,13 @@ int main(int argc, char *argv[]) {
                 // Time
                 int hour=0,min=0;
                 strcpy(buf, argv[7]);
-                sscanf(buf,"%02d:%02d",&hour,&min);
+                sscanf(buf,"%d:%d",&hour,&min);
                 check=validateTime(hour, min, r);
                 if (check==1) {
                     printf("Invalid Time\n");
                     exit(0);
                 } else if (check==2)
-                    strcpy(r.due,"");
+                    strcpy(r.due,"0:0");
                 else {
                     snprintf(r.cdue, 12, "%d:%d",hour,min);
                     strcpy(r.due, r.cdue);
@@ -355,13 +386,13 @@ int main(int argc, char *argv[]) {
                 // Date
                 int month=0,day=0;
                 strcpy(buf, argv[8]);
-                sscanf(buf,"%02d/%02d",&month,&day);
+                sscanf(buf,"%d/%d",&month,&day);
                 check=validateDate(month, day, r);
                 if (check==1) {
                     printf("Invalid Date\n");
                     exit(0);
                 } else if (check==2)
-                    strcpy(r.date,"");
+                    strcpy(r.date,"0/0");
                 else {
                     snprintf(r.cdate, 12, "%d/%d",month,day);
                     strcpy(r.date, r.cdate);
