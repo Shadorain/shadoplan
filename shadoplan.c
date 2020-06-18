@@ -269,6 +269,12 @@ void listDate(struct Rules r) {
     struct Time times[r.lines];
 
     for (int i=0; i < r.lines; i++) {
+        r.c1[i][strcspn(r.c1[i], "\n")] = 0;
+        r.c2[i][strcspn(r.c2[i], "\n")] = 0;
+        r.c3[i][strcspn(r.c3[i], "\n")] = 0;
+        r.c4[i][strcspn(r.c4[i], "\n")] = 0;
+        r.c5[i][strcspn(r.c5[i], "\n")] = 0;
+        r.c6[i][strcspn(r.c6[i], "\n")] = 0;
         sscanf(r.c5[i], "%d:%d",&hour,&min);
         sscanf(r.c6[i], "%d/%d",&month,&day);
         if(month==0 && day==0)
@@ -285,14 +291,16 @@ void listDate(struct Rules r) {
         printf("Date: %02d/%02d\n",dates[i].month, dates[i].day);
     for (int i=0;i<r.lines;i++)
         printf("Time: %02d:%02d\n",times[i].hour, times[i].min);
-    for (int i=0;i<r.lines;i++)
-        printf("NDATE: %d\n", ndateInd[i]);
 
     // Non Dated TODOs
+    printf("                                              -<| Non Dated: |>-\n");
+    printf(" | Pri | Title               | Description                                        | Category       | Time  |\n");
+    printf(" |-----|---------------------|----------------------------------------------------|----------------|-------|\n");
     for (int i=0;i<r.lines;i++) {
-        if (ndateInd[i-1] != -1)
+        ndateInd[i]=ndateInd[i]-1;
+        if (ndateInd[i] != -1)
+            printf(" | %-3.2s | %-19.18s | %-50.50s | %-14.14s | %-5s |\n",r.c3[i],r.c1[i],r.c2[i],r.c4[i],r.c5[i]);
             // TODO : print full line here for misc date todos, HAVE IN COLUMNS
-            printf("%s",r.c6[i]);
     }
 }
 
