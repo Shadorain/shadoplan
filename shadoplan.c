@@ -299,7 +299,7 @@ void listDate(struct Rules r) {
     for (int i=0;i<r.lines;i++) {
         ndateInd[i]=ndateInd[i]-1;
         if (ndateInd[i] != -1)
-            printf(" | %-3.2s | %-19.18s | %-50.50s | %-14.14s | %-5s |\n",r.c3[i],r.c1[i],r.c2[i],r.c4[i],r.c5[i]);
+            printf(" | %-3.2s | %-18.18s | %-50.50s | %-14.14s | %-5s |\n",r.c3[i],r.c1[i],r.c2[i],r.c4[i],r.c5[i]);
             // TODO : print full line here for misc date todos, HAVE IN COLUMNS
     }
 }
