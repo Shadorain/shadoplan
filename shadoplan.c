@@ -12,12 +12,10 @@
 
 struct Date {
     int day, month;
-    int ind[];
 };
 
 struct Time {
     int hour, min;
-    int ind[];
 };
 
 struct Rules {
@@ -275,12 +273,15 @@ void listDate(struct Rules r) {
         r.c4[i][strcspn(r.c4[i], "\n")] = 0;
         r.c5[i][strcspn(r.c5[i], "\n")] = 0;
         r.c6[i][strcspn(r.c6[i], "\n")] = 0;
-        sscanf(r.c5[i], "%d:%d",&hour,&min);
         sscanf(r.c6[i], "%d/%d",&month,&day);
         if(month==0 && day==0)
             ndateInd[i]=i+1;
         dates[i].month=month;
         dates[i].day=day;
+    }
+
+    for (int i=0;i<r.lines;i++) {
+        sscanf(r.c5[i], "%d:%d",&hour,&min);
         times[i].hour=hour;
         times[i].min=min;
     }
