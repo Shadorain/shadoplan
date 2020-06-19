@@ -281,7 +281,7 @@ void listDate(struct Rules r) {
         dates[i].minute=min;
     }
 
-    qsort(dates, r.lines, 8, compareDT);
+    qsort(dates, r.lines, sizeof(struct DateTime *), compareDT);
     for (int i=0;i<r.lines;i++)
         printf("Date Time: %02d/%02d | %02d:%02d\n",dates[i].month, dates[i].day, dates[i].hour, dates[i].minute);
 
