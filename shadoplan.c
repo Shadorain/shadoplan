@@ -11,8 +11,13 @@
 #define MAX_CATEGORIES 50
 #define MAX_TODOS 1000
 
-struct Date {
+struct DateTime {
     int month, day, hour, minute;
+    int ind;
+};
+
+struct Priority {
+    int pri;
     int ind;
 };
 
@@ -49,8 +54,8 @@ struct Rules {
 // Function Declaration
 void add (struct Rules r);
 void catClean();
-int compareD(const void *a, const void *b);
-int compareT(const void *a, const void *b);
+int compareDT(const void *a, const void *b);
+int compareP(const void *a, const void *b);
 void list (struct Rules r, char method[]);
 void listDate(struct Rules r);
 void listPriority(struct Rules r);
@@ -112,9 +117,9 @@ void catClean() {
 }
 
 // Sorting function for dates and time
-int compareD(const void *a, const void *b) {
-    const struct Date *d1 = (const struct Date *)a;
-    const struct Date *d2 = (const struct Date *)b;
+int compareDT(const void *a, const void *b) {
+    const struct DateTime *d1 = (const struct DateTime *)a;
+    const struct DateTime *d2 = (const struct DateTime *)b;
     if (d1->month < d2->month) return -1;
     else if (d1->month > d2->month) return 1;
     else if (d1->day < d2->day) return -1;
@@ -123,6 +128,15 @@ int compareD(const void *a, const void *b) {
     else if (d1->hour > d2->hour) return 1;
     else if (d1->minute < d2->minute) return -1;
     else if (d1->minute > d2->minute) return 1;
+    else return 0;
+}
+
+// Sort funct for priority
+int compareP(const void *a, const void *b) {
+    const struct Priority *p1 = (const struct Priority *)a;
+    const struct Priority *p2 = (const struct Priority *)b;
+    if (p1->pri < p2->pri) return -1;
+    else if (p1->pri > p2->pri) return 1;
     else return 0;
 }
 
@@ -247,7 +261,7 @@ void list(struct Rules r, char method[]) {
 void listDate(struct Rules r) {
     int month=0,day=0,hour=0,min=0,tmon=0,tday=0,tmmr=0,tdy=0;
     int ndateInd[r.lines];
-    struct Date dates[r.lines];
+    struct DateTime dates[r.lines];
     time_t now; time(&now);
     struct tm *local = localtime(&now);
     tmon = local->tm_mon+1; tday = local->tm_mday;
@@ -272,7 +286,7 @@ void listDate(struct Rules r) {
         if (dates[i].month==tmon && dates[i].day==tday+1) tmmr=1;
     }
 
-    qsort(dates, r.lines, sizeof(dates[0]), compareD);
+    qsort(dates, r.lines, sizeof(dates[0]), compareDT);
     // Sorted Todos!!
     if (tdy==1) {
         printf("\n |     Today     |>-\n");
@@ -306,9 +320,58 @@ void listDate(struct Rules r) {
 }
 
 void listPriority(struct Rules r) {
+    int priority=0,low=0,med=0,high=0;
+    int npriInd[r.lines];
+    struct Priority pris[r.lines];
+    for (int i=0;i<r.lines;i++) {
+        r.c1[i][strcspn(r.c1[i], "\n")] = 0;
+        r.c2[i][strcspn(r.c2[i], "\n")] = 0;
+        r.c3[i][strcspn(r.c3[i], "\n")] = 0;
+        r.c4[i][strcspn(r.c4[i], "\n")] = 0;
+        r.c5[i][strcspn(r.c5[i], "\n")] = 0;
+        r.c6[i][strcspn(r.c6[i], "\n")] = 0;
+        sscanf(r.c3[i], "%d",&priority);
+        if (priority==0) npriInd[i]=i+1;
+        pris[i].pri=priority;
+        pris[i].ind=i;
+        if (pris[i].pri==1 || pris[i].pri==2 || pris[i].pri==3) high=1;
+        if (pris[i].pri==4 || pris[i].pri==5 || pris[i].pri==6) med=1;
+        if (pris[i].pri==7 || pris[i].pri==8 || pris[i].pri==9) low=1;
+    }
 
-    // TODO: Order each column by priority, all todos
+    qsort(pris, r.lines, sizeof(pris[0]), compareP);
+    // Sorted Todos!!
+    printf("\n | P | Title               | Description                                        | Category       | Date  | Time  |");
+    if (high==1) { //High priority
+        printf("\n |  High Priority  |>------l\n");
+        printf(" |---=---------------------=----------------------------------------------------=----------------=-------=-------|\n");
+        for (int i=0;i<r.lines;i++)
+            if (pris[i].pri!=0)
+                if (pris[i].pri==1 || pris[i].pri==2 || pris[i].pri==3)
+                    printf(" | %1s | %-19.18s | %-50.50s | %-14.14s | %-5s | %-5s |\n",r.c3[pris[i].ind], r.c1[pris[i].ind], r.c2[pris[i].ind],r.c4[pris[i].ind],r.c5[pris[i].ind],r.c6[pris[i].ind]); }
+    if (med==1) { //Medium priority
+        printf("\n |  Medium Priority  |>----l\n");
+        printf(" |---=---------------------=----------------------------------------------------=----------------=-------=-------|\n");
+        for (int i=0;i<r.lines;i++)
+            if (pris[i].pri!=0)
+                if (pris[i].pri==4 || pris[i].pri==5 || pris[i].pri==6)
+                    printf(" | %1s | %-19.18s | %-50.50s | %-14.14s | %-5s | %-5s |\n",r.c3[pris[i].ind], r.c1[pris[i].ind], r.c2[pris[i].ind],r.c4[pris[i].ind],r.c5[pris[i].ind],r.c6[pris[i].ind]); }
+    if (low==1) { // low priority
+        printf("\n |  Low Priority  |>-------l\n");
+        printf(" |---=---------------------=----------------------------------------------------=----------------=-------=-------|\n");
+        for (int i=0;i<r.lines;i++)
+            if (pris[i].pri!=0)
+                if (pris[i].pri==7 || pris[i].pri==8 || pris[i].pri==9)
+                    printf(" | %1s | %-19.18s | %-50.50s | %-14.14s | %-5s | %-5s |\n",r.c3[pris[i].ind], r.c1[pris[i].ind], r.c2[pris[i].ind],r.c4[pris[i].ind],r.c5[pris[i].ind],r.c6[pris[i].ind]); }
 
+    // Unprioritized TODOs
+    printf("\n\n |  Unprioritized  |>--l\n");
+    printf(" | Title               | Description                                        | Category       | Time  | Date  |\n");
+    printf(" |---------------------=----------------------------------------------------=----------------=-------=-------|\n");
+    for (int i=0;i<r.lines;i++) {
+        npriInd[i]=npriInd[i]-1;
+        if (npriInd[i] != -1)
+            printf(" | %-19.18s | %-50.50s | %-14.14s | %-5s | %-5s |\n",r.c1[i],r.c2[i],r.c4[i],r.c5[i],r.c6[i]); }
 }
 
 void listTree(struct Rules r) {
