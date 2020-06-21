@@ -10,8 +10,9 @@
 #define MAX_CATEGORIES 50
 #define MAX_TODOS 1000
 
-struct DateTime {
+struct Date {
     int month, day, hour, minute;
+    int ind;
 };
 
 struct Rules {
@@ -47,7 +48,8 @@ struct Rules {
 // Function Declaration
 void add (struct Rules r);
 void catClean();
-int compareDT(const void *a, const void *b);
+int compareD(const void *a, const void *b);
+int compareT(const void *a, const void *b);
 void list (struct Rules r, char method[]);
 void listDate(struct Rules r);
 void listPriority(struct Rules r);
@@ -108,9 +110,9 @@ void catClean() {
     }
 }
 
-int compareDT(const void *a, const void *b) {
-    const struct DateTime * d1 = (const struct DateTime *) a;
-    const struct DateTime * d2 = (const struct DateTime *) b;
+int compareD(const void *a, const void *b) {
+    const struct Date *d1 = (const struct Date *)a;
+    const struct Date *d2 = (const struct Date *)b;
     if (d1->month < d2->month) return -1;
     else if (d1->month > d2->month) return 1;
     else if (d1->day < d2->day) return -1;
@@ -120,25 +122,7 @@ int compareDT(const void *a, const void *b) {
     else if (d1->minute < d2->minute) return -1;
     else if (d1->minute > d2->minute) return 1;
     else return 0;
-    /* if (d1->month < d2->month) */
-    /*     return -1; */
-    /* if (d1->month > d2->month) */
-    /*     return 1; */
-    /* else if (d1->month==d2->month && d1->day < d2->day) */
-    /*     return -1; */
-    /* else if (d1->month==d2->month && d1->day > d2->day) */
-    /*     return 1; */
-    /* else if (d1->month==d2->month && d1->day==d2->day && d1->hour < d2->hour) */
-    /*     return -1; */
-    /* else if (d1->month==d2->month && d1->day==d2->day && d1->hour > d2->hour) */
-    /*     return 1; */
-    /* else if (d1->month==d2->month && d1->day==d2->day && d1->hour==d2->hour && d1->minute < d2->minute) */
-    /*     return -1; */
-    /* else if (d1->month==d2->month && d1->day==d2->day && d1->hour==d2->hour && d1->minute > d2->minute) */
-    /*     return 1; */
-    /* else return 0; */
 }
-
 
 // t -l/--list option, displays list in specified way
 void list(struct Rules r, char method[]) {
@@ -261,8 +245,8 @@ void listDate(struct Rules r) {
     // TODO: Order by date/time priority
         // First: Check dates/times of each accessible index, and find the most current
     int month=0,day=0,hour=0,min=0;
-    int ndateInd[r.lines], dateInd[r.lines];
-    struct DateTime dates[r.lines];
+    int ndateInd[r.lines];
+    struct Date dates[r.lines];
 
     for (int i=0; i < r.lines; i++) {
         r.c1[i][strcspn(r.c1[i], "\n")] = 0;
@@ -273,27 +257,37 @@ void listDate(struct Rules r) {
         r.c6[i][strcspn(r.c6[i], "\n")] = 0;
         sscanf(r.c6[i], "%d/%d",&month,&day);
         sscanf(r.c5[i], "%d:%d",&hour,&min);
-        if(month==0 && day==0)
+        if(month==0 && day==0) // find empty dated todos (handled below)
             ndateInd[i]=i+1;
         dates[i].month=month;
         dates[i].day=day;
         dates[i].hour=hour;
         dates[i].minute=min;
+        dates[i].ind=i;
     }
 
-    qsort(dates, r.lines, sizeof(struct DateTime *), compareDT);
+    qsort(dates, r.lines, sizeof(dates[0]), compareD);
+    // Sorted Todos!!
+    printf("                                              -<| Dated: |>-\n");
+    printf(" |-------=-------=---=---------------------=----------------------------------------------------=----------------|\n");
+    printf(" | Date  | Time  | P | Title               | Description                                        | Category       |\n");
+    printf(" |-------|-------|---|---------------------|----------------------------------------------------|----------------|\n");
     for (int i=0;i<r.lines;i++)
-        printf("Date Time: %02d/%02d | %02d:%02d\n",dates[i].month, dates[i].day, dates[i].hour, dates[i].minute);
+        if (dates[i].month!=0 || dates[i].day!=0)
+            printf(" | %-5s | %-5s | %-1s | %-19.18s | %-50.50s | %-14.14s |\n",r.c6[dates[i].ind], r.c5[dates[i].ind], r.c3[dates[i].ind],r.c1[dates[i].ind],r.c2[dates[i].ind],r.c4[dates[i].ind]);
+    printf(" |-------=-------=---=---------------------=----------------------------------------------------=----------------|\n");
 
     // Non Dated TODOs
-    printf("                                              -<| Non Dated: |>-\n");
-    printf(" | Pri | Title               | Description                                        | Category       | Time  |\n");
-    printf(" |-----|---------------------|----------------------------------------------------|----------------|-------|\n");
+    printf("\n                                            -<| Non Dated: |>-\n");
+    printf(" |-------=---=---------------------=----------------------------------------------------=----------------|\n");
+    printf(" | Time  | P | Title               | Description                                        | Category       |\n");
+    printf(" |-------|---|---------------------|----------------------------------------------------|----------------|\n");
     for (int i=0;i<r.lines;i++) {
         ndateInd[i]=ndateInd[i]-1;
         if (ndateInd[i] != -1)
-            printf(" | %-3.2s | %-19.18s | %-50.50s | %-14.14s | %-5s |\n",r.c3[i],r.c1[i],r.c2[i],r.c4[i],r.c5[i]);
+            printf(" | %-5s | %-1s | %-19.18s | %-50.50s | %-14.14s |\n",r.c5[i],r.c3[i],r.c1[i],r.c2[i],r.c4[i]);
     }
+    printf(" |-------=---=---------------------=----------------------------------------------------=----------------|\n");
 }
 
 void listPriority(struct Rules r) {
