@@ -343,21 +343,21 @@ void listPriority(struct Rules r) {
     // Sorted Todos!!
     printf("\n | P | Title               | Description                                        | Category       | Date  | Time  |");
     if (high==1) { //High priority
-        printf("\n |  High Priority  |>------l\n");
+        printf("\n |  High Priority  |>-\n");
         printf(" |---=---------------------=----------------------------------------------------=----------------=-------=-------|\n");
         for (int i=0;i<r.lines;i++)
             if (pris[i].pri!=0)
                 if (pris[i].pri==1 || pris[i].pri==2 || pris[i].pri==3)
                     printf(" | %1s | %-19.18s | %-50.50s | %-14.14s | %-5s | %-5s |\n",r.c3[pris[i].ind], r.c1[pris[i].ind], r.c2[pris[i].ind],r.c4[pris[i].ind],r.c5[pris[i].ind],r.c6[pris[i].ind]); }
     if (med==1) { //Medium priority
-        printf("\n |  Medium Priority  |>----l\n");
+        printf("\n | Medium Priority |>-\n");
         printf(" |---=---------------------=----------------------------------------------------=----------------=-------=-------|\n");
         for (int i=0;i<r.lines;i++)
             if (pris[i].pri!=0)
                 if (pris[i].pri==4 || pris[i].pri==5 || pris[i].pri==6)
                     printf(" | %1s | %-19.18s | %-50.50s | %-14.14s | %-5s | %-5s |\n",r.c3[pris[i].ind], r.c1[pris[i].ind], r.c2[pris[i].ind],r.c4[pris[i].ind],r.c5[pris[i].ind],r.c6[pris[i].ind]); }
     if (low==1) { // low priority
-        printf("\n |  Low Priority  |>-------l\n");
+        printf("\n |  Low Priority   |>-\n");
         printf(" |---=---------------------=----------------------------------------------------=----------------=-------=-------|\n");
         for (int i=0;i<r.lines;i++)
             if (pris[i].pri!=0)
@@ -365,7 +365,7 @@ void listPriority(struct Rules r) {
                     printf(" | %1s | %-19.18s | %-50.50s | %-14.14s | %-5s | %-5s |\n",r.c3[pris[i].ind], r.c1[pris[i].ind], r.c2[pris[i].ind],r.c4[pris[i].ind],r.c5[pris[i].ind],r.c6[pris[i].ind]); }
 
     // Unprioritized TODOs
-    printf("\n\n |  Unprioritized  |>--l\n");
+    printf("\n\n |  Unprioritized  |>-\n");
     printf(" | Title               | Description                                        | Category       | Time  | Date  |\n");
     printf(" |---------------------=----------------------------------------------------=----------------=-------=-------|\n");
     for (int i=0;i<r.lines;i++) {
