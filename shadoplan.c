@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 // Files
 #include "config.h"
 #include "options.h"
@@ -110,6 +111,7 @@ void catClean() {
     }
 }
 
+// Sorting function for dates and time
 int compareD(const void *a, const void *b) {
     const struct Date *d1 = (const struct Date *)a;
     const struct Date *d2 = (const struct Date *)b;
@@ -241,12 +243,14 @@ void list(struct Rules r, char method[]) {
     fclose(td);
 }
 
+// t -l date : sorts by date and time
 void listDate(struct Rules r) {
-    // TODO: Order by date/time priority
-        // First: Check dates/times of each accessible index, and find the most current
-    int month=0,day=0,hour=0,min=0;
+    int month=0,day=0,hour=0,min=0,tmon=0,tday=0,tmmr=0,tdy=0;
     int ndateInd[r.lines];
     struct Date dates[r.lines];
+    time_t now; time(&now);
+    struct tm *local = localtime(&now);
+    tmon = local->tm_mon+1; tday = local->tm_mday;
 
     for (int i=0; i < r.lines; i++) {
         r.c1[i][strcspn(r.c1[i], "\n")] = 0;
@@ -264,30 +268,41 @@ void listDate(struct Rules r) {
         dates[i].hour=hour;
         dates[i].minute=min;
         dates[i].ind=i;
+        if (dates[i].month==tmon && dates[i].day==tday) tdy=1;
+        if (dates[i].month==tmon && dates[i].day==tday+1) tmmr=1;
     }
 
     qsort(dates, r.lines, sizeof(dates[0]), compareD);
     // Sorted Todos!!
-    printf("                                              -<| Dated: |>-\n");
+    if (tdy==1) {
+        printf("\n |     Today     |>-\n");
+        printf(" | Date  | Time  | P | Title               | Description                                        | Category       |\n");
+        printf(" |-------=-------=---=---------------------=----------------------------------------------------=----------------|\n");
+        for (int i=0;i<r.lines;i++)
+            if (dates[i].month!=0 || dates[i].day!=0)
+                if (dates[i].month==tmon && dates[i].day==tday)
+                    printf(" | %-5s | %-5s | %-1s | %-19.18s | %-50.50s | %-14.14s |\n",r.c6[dates[i].ind], r.c5[dates[i].ind], r.c3[dates[i].ind],r.c1[dates[i].ind],r.c2[dates[i].ind],r.c4[dates[i].ind]); }
+    if (tmmr==1) {
+        printf("\n |   Tomorrow    |>-\n");
+        printf(" |-------=-------=---=---------------------=----------------------------------------------------=----------------|\n");
+        for (int i=0;i<r.lines;i++)
+            if (dates[i].month!=0 || dates[i].day!=0)
+                if (dates[i].month==tmon && dates[i].day==tday+1)
+                    printf(" | %-5s | %-5s | %-1s | %-19.18s | %-50.50s | %-14.14s |\n",r.c6[dates[i].ind], r.c5[dates[i].ind], r.c3[dates[i].ind],r.c1[dates[i].ind],r.c2[dates[i].ind],r.c4[dates[i].ind]); }
+    printf("\n |  Coming up... |>-\n");
     printf(" |-------=-------=---=---------------------=----------------------------------------------------=----------------|\n");
-    printf(" | Date  | Time  | P | Title               | Description                                        | Category       |\n");
-    printf(" |-------|-------|---|---------------------|----------------------------------------------------|----------------|\n");
     for (int i=0;i<r.lines;i++)
         if (dates[i].month!=0 || dates[i].day!=0)
             printf(" | %-5s | %-5s | %-1s | %-19.18s | %-50.50s | %-14.14s |\n",r.c6[dates[i].ind], r.c5[dates[i].ind], r.c3[dates[i].ind],r.c1[dates[i].ind],r.c2[dates[i].ind],r.c4[dates[i].ind]);
-    printf(" |-------=-------=---=---------------------=----------------------------------------------------=----------------|\n");
 
     // Non Dated TODOs
-    printf("\n                                            -<| Non Dated: |>-\n");
-    printf(" |-------=---=---------------------=----------------------------------------------------=----------------|\n");
+    printf("\n\n | Non-dated |>-\n");
     printf(" | Time  | P | Title               | Description                                        | Category       |\n");
-    printf(" |-------|---|---------------------|----------------------------------------------------|----------------|\n");
+    printf(" |-------=---=---------------------=----------------------------------------------------=----------------|\n");
     for (int i=0;i<r.lines;i++) {
         ndateInd[i]=ndateInd[i]-1;
         if (ndateInd[i] != -1)
-            printf(" | %-5s | %-1s | %-19.18s | %-50.50s | %-14.14s |\n",r.c5[i],r.c3[i],r.c1[i],r.c2[i],r.c4[i]);
-    }
-    printf(" |-------=---=---------------------=----------------------------------------------------=----------------|\n");
+            printf(" | %-5s | %-1s | %-19.18s | %-50.50s | %-14.14s |\n",r.c5[i],r.c3[i],r.c1[i],r.c2[i],r.c4[i]); }
 }
 
 void listPriority(struct Rules r) {
@@ -306,7 +321,7 @@ int validateDate(int month, int day, struct Rules r) {
     int ret=0;
 
     if(month > 12 || month < 1) ret=1;
-    if(month==4 || month==6 || month==9 || month==11 && (day > 30 || day < 1)) ret=1;
+    if((month==4 || month==6 || month==9 || month==11) && (day > 30 || day < 1)) ret=1;
     if(month==2 && (day > 29 || day < 1)) ret=1;
     if(day > 31 || day < 1) ret=1;
 
