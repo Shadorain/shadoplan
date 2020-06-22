@@ -23,7 +23,7 @@ struct Priority {
 
 struct Rules {
     char VERSION[3];
-    int priority,lines;
+    int priority,lines,ctlines;
     char pri[4];
     char title[96];
     char desc[512];
@@ -376,7 +376,22 @@ void listPriority(struct Rules r) {
 
 void listTree(struct Rules r) {
 
-    // TODO: Check category that is the root. The check each todo category and put each in the correct spot.
+    // TODO: Check category that is the root. Then check each todo category and put each in the correct spot.
+        // ':' indicates parent:child (can have multiple children or children of children) 
+    for (int i=0;i<r.ctlines;i++) {
+        r.cats[i][strcspn(r.cats[i], "\n")] = 0;
+        printf("| %s |>-\n",r.cats[i]);
+        for (int j=0;j<r.lines;j++) {
+            r.c1[j][strcspn(r.c1[j], "\n")] = 0;
+            r.c2[j][strcspn(r.c2[j], "\n")] = 0;
+            r.c3[j][strcspn(r.c3[j], "\n")] = 0;
+            r.c4[j][strcspn(r.c4[j], "\n")] = 0;
+            r.c5[j][strcspn(r.c5[j], "\n")] = 0;
+            r.c6[j][strcspn(r.c6[j], "\n")] = 0;
+            if(!strcmp(r.cats[i],r.c4[j]))
+                printf(" | %1s | %-19.18s | %-50.50s | %-5s | %-5s |\n", r.c3[j], r.c1[j],r.c2[j],r.c5[j],r.c6[j]);
+        }
+    }
 
 }
 
@@ -406,13 +421,19 @@ int validateTime(int hour, int min, struct Rules r) {
 
 int main(int argc, char *argv[]) {
     struct Rules r;
-    FILE *td;
+    FILE *td,*ct;
     int TUI=1, check=0;
     char buf[12]={0};
     td = fopen(tdpath, "r");
     for (int c = getc(td); c != EOF; c = getc(td))
     if (c == '\n')
         r.lines = r.lines + 1;
+    fclose(td);
+    ct = fopen(categories, "r");
+    for (int c = getc(ct); c != EOF; c = getc(ct))
+    if (c == '\n')
+        r.ctlines = r.ctlines + 1;
+    fclose(ct);
     strncpy(r.VERSION, "1.0", 3);
     // Checks if options given, if not then runs Tui
     if (argc==2 && (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version"))) { // Prints Version
