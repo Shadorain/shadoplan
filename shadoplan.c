@@ -380,7 +380,7 @@ void listTree(struct Rules r) {
         // ':' indicates parent:child (can have multiple children or children of children) 
     for (int i=0;i<r.ctlines;i++) {
         r.cats[i][strcspn(r.cats[i], "\n")] = 0;
-        printf("| %s |>-\n",r.cats[i]);
+        printf(" | %s |>=\n",r.cats[i]);
         for (int j=0;j<r.lines;j++) {
             r.c1[j][strcspn(r.c1[j], "\n")] = 0;
             r.c2[j][strcspn(r.c2[j], "\n")] = 0;
@@ -389,7 +389,7 @@ void listTree(struct Rules r) {
             r.c5[j][strcspn(r.c5[j], "\n")] = 0;
             r.c6[j][strcspn(r.c6[j], "\n")] = 0;
             if(!strcmp(r.cats[i],r.c4[j]))
-                printf(" | %1s | %-19.18s | %-50.50s | %-5s | %-5s |\n", r.c3[j], r.c1[j],r.c2[j],r.c5[j],r.c6[j]);
+                printf("  | %1s | %-19.18s | %-50.50s | %-5s | %-5s |\n", r.c3[j], r.c1[j],r.c2[j],r.c5[j],r.c6[j]);
         }
     }
 
