@@ -52,14 +52,15 @@ struct Rules {
 };
 
 // Function Declaration
-void add (struct Rules r);
+void add(struct Rules r);
 void catClean();
 int compareDT(const void *a, const void *b);
 int compareP(const void *a, const void *b);
-void list (struct Rules r, char method[]);
+void list(struct Rules r, char method[]);
 void listDate(struct Rules r);
 void listPriority(struct Rules r);
 void listTree(struct Rules r);
+void swap(char **s1, char **s2);
 int validateTime(int hour, int min, struct Rules r);
 int validateDate(int month, int day, struct Rules r);
 
@@ -91,27 +92,60 @@ void add (struct Rules r) {
     if(catadd==1)
         fprintf(ct, "%s\n",r.cat);
     fclose(ct);
+    catClean();
 }
 
 // c -c/--clean option, cleans categories file
 void catClean() {
     FILE *ct, *fp;
-    char buf[36];
+    char buf[36],c,*parent,*child;
+    char *cats[MAX_CATEGORIES],*tmpcats[MAX_CATEGORIES],*fin[MAX_CATEGORIES];
     char *awkcmd = "cat /home/shadow/.todos/todo | awk -F'\",\"' '{print $4}' | awk '!visited[$0]++'"; //Declared awk command here
+    int count=0,i=0;
 
     // Clean Confirmation
     printf("--<| This will rebuild all current categories and remove extras not in use. |>-- \nContinue [Y/n] ❱ ");
-    char c = getchar();
+    
+    c = getchar();
     if (c=='y'||c=='Y') {
         fp = popen(awkcmd,"r");
         ct = fopen(categories, "w");
         // Reads all lines from awkcmd output and prints them to ct file
+        memset(cats, 0, MAX_CATEGORIES * sizeof(char *));
+        memset(tmpcats, 0, MAX_CATEGORIES * sizeof(char *));
         while (fgets(buf, sizeof(buf), fp) != 0) {
-            fprintf(ct, "%s",buf);
+            cats[i] = malloc(strlen(buf) + 1);
+            tmpcats[i] = malloc(strlen(buf) + 1);
+            if (cats[i]) {
+                strcpy(cats[i], buf);
+                strcpy(tmpcats[i], buf);
+                count = count + 1; }
+            i++;
         }
-        // Clean up
-        fclose(fp);
+        pclose(fp);
         fclose(ct);
+
+        memset(fin, 0, MAX_CATEGORIES * sizeof(char *));
+        for (int j=0;j<count;j++) {
+            fin[j] = malloc(strlen(buf) + 1);
+            /* printf("Pre sort: %s",cats[j]); */
+        }
+        for (int j=0;j<count;j++) {
+            if(strchr(cats[j], ':')) {
+                parent=strtok(tmpcats[j], ":");
+                child=strtok(NULL,":");
+                child[strcspn(child, "\n")] = 0;
+                for (int k=0;k<count;k++) {
+                    if (!strcmp(cats[k],parent))
+                        snprintf(fin[k], sizeof(fin[k]),"%s:%s",parent,child);
+                strcpy(fin[j], cats[j]);
+                printf("%s\n",fin[j]);}
+            }
+        }
+
+        /* for (int j=0;j<count;j++) */
+        /*     printf("Post sort: %s",cats[j]); */
+
         printf("<--| Successfully cleaned categories file |-->\n");
     }
 }
@@ -175,7 +209,7 @@ void list(struct Rules r, char method[]) {
             strcpy(r.c1[i], r.title);
         i++;
     }
-    fclose(c1);
+    pclose(c1);
 
     // Grabs each description
     c2 = popen(r.col2, "r");
@@ -187,7 +221,7 @@ void list(struct Rules r, char method[]) {
             strcpy(r.c2[i], r.desc);
         i++;
     }
-    fclose(c2);
+    pclose(c2);
 
     // Grabs each priority
     c3 = popen(r.col3, "r");
@@ -199,7 +233,7 @@ void list(struct Rules r, char method[]) {
             strcpy(r.c3[i], r.pri);
         i++;
     }
-    fclose(c3);
+    pclose(c3);
 
     // Grabs each category
     c4 = popen(r.col4, "r");
@@ -211,7 +245,7 @@ void list(struct Rules r, char method[]) {
             strcpy(r.c4[i], r.cat);
         i++;
     }
-    fclose(c4);
+    pclose(c4);
 
     // Grabs each time
     c5 = popen(r.col5, "r");
@@ -223,7 +257,7 @@ void list(struct Rules r, char method[]) {
             strcpy(r.c5[i], r.due);
         i++;
     }
-    fclose(c5);
+    pclose(c5);
 
     // Grabs each date
     c6 = popen(r.col6, "r");
@@ -235,7 +269,7 @@ void list(struct Rules r, char method[]) {
             strcpy(r.c6[i], r.due);
         i++;
     }
-    fclose(c6);
+    pclose(c6);
 
     if (!strcmp(method,"tree"))
         listTree(r);
@@ -380,7 +414,7 @@ void listTree(struct Rules r) {
         // ':' indicates parent:child (can have multiple children or children of children) 
     for (int i=0;i<r.ctlines;i++) {
         r.cats[i][strcspn(r.cats[i], "\n")] = 0;
-        printf(" | %s |>=\n",r.cats[i]);
+        printf(" | %s |>=-\n",r.cats[i]);
         for (int j=0;j<r.lines;j++) {
             r.c1[j][strcspn(r.c1[j], "\n")] = 0;
             r.c2[j][strcspn(r.c2[j], "\n")] = 0;
@@ -388,11 +422,21 @@ void listTree(struct Rules r) {
             r.c4[j][strcspn(r.c4[j], "\n")] = 0;
             r.c5[j][strcspn(r.c5[j], "\n")] = 0;
             r.c6[j][strcspn(r.c6[j], "\n")] = 0;
-            if(!strcmp(r.cats[i],r.c4[j]))
-                printf("  | %1s | %-19.18s | %-50.50s | %-5s | %-5s |\n", r.c3[j], r.c1[j],r.c2[j],r.c5[j],r.c6[j]);
+            if(!strcmp(r.cats[i],r.c4[j])) {
+                if (!strchr(r.cats[i],':'))
+                    printf("  | %1s | %-19.18s | %-50.50s | %-5s | %-5s |\n", r.c3[j], r.c1[j],r.c2[j],r.c5[j],r.c6[j]);
+                else
+                    printf("   | %1s | %-19.18s | %-50.50s | %-5s | %-5s |\n", r.c3[j], r.c1[j],r.c2[j],r.c5[j],r.c6[j]);
+            }
         }
     }
 
+}
+
+void swap(char **s1, char **s2) {
+    char *temp = *s1;
+    *s1 = *s2;
+    *s2 = temp;
 }
 
 int validateDate(int month, int day, struct Rules r) {
@@ -484,8 +528,7 @@ int main(int argc, char *argv[]) {
                }
             }
             if (argc > 9)
-                usage();
-            
+                usage();            
             if (argc >= 6 && argc < 10)
                 r.priority=atoi(argv[5]);
             if (argc >= 7 && argc < 10)
