@@ -131,6 +131,7 @@ void catClean() {
             /* printf("Pre sort: %s",cats[j]); */
         }
         for (int j=0;j<count;j++) {
+            strcpy(fin[j], cats[j]);
             if(strchr(cats[j], ':')) {
                 parent=strtok(tmpcats[j], ":");
                 child=strtok(NULL,":");
@@ -138,9 +139,8 @@ void catClean() {
                 for (int k=0;k<count;k++) {
                     if (!strcmp(cats[k],parent))
                         snprintf(fin[k], sizeof(fin[k]),"%s:%s",parent,child);
-                strcpy(fin[j], cats[j]);
-                printf("%s\n",fin[j]);}
             }
+            printf("%s\n",fin[j]);}
         }
 
         /* for (int j=0;j<count;j++) */
